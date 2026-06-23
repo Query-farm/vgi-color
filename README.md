@@ -4,7 +4,9 @@
 
 <p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
 
-# vgi-color
+# Color Science — RGB/HSL/LAB, CIEDE2000 ΔE & WCAG Contrast in DuckDB
+
+> **vgi-color** · a [Query.Farm](https://query.farm) VGI worker
 
 A [VGI](https://query.farm) worker that brings **color science** — color-space
 conversions, **CIEDE2000** color difference (ΔE), and **WCAG** contrast — to
