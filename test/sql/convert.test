@@ -1,0 +1,88 @@
+# name: test/sql/convert.test
+# group: [vgi_color]
+#
+# Color-space conversions: to_hex / from_hex round-trip, rgb_to_hsl, hsl_to_rgb,
+# rgb_to_lab. Floats are asserted with ROUND() for determinism. Invalid hex flows
+# to a NULL struct row.
+
+require-env VGI_COLOR_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'color' AS color (TYPE vgi, LOCATION '${VGI_COLOR_WORKER}');
+
+statement ok
+SET search_path = 'color.main';
+
+# to_hex of pure red.
+query T
+SELECT to_hex(255, 0, 0);
+----
+#ff0000
+
+# to_hex clamps out-of-range channels.
+query T
+SELECT to_hex(300, -5, 0);
+----
+#ff0000
+
+# from_hex / to_hex round-trip.
+query T
+SELECT to_hex((from_hex('#3a7bd5')).r, (from_hex('#3a7bd5')).g, (from_hex('#3a7bd5')).b);
+----
+#3a7bd5
+
+# from_hex of red yields (255, 0, 0).
+query III
+SELECT (from_hex('#ff0000')).r, (from_hex('#ff0000')).g, (from_hex('#ff0000')).b;
+----
+255	0	0
+
+# Short #rgb form expands.
+query III
+SELECT (from_hex('#f00')).r, (from_hex('#f00')).g, (from_hex('#f00')).b;
+----
+255	0	0
+
+# rgb_to_hsl of red: h≈0, s≈1, l≈0.5.
+query RRR
+SELECT ROUND((rgb_to_hsl(255, 0, 0)).h, 1), ROUND((rgb_to_hsl(255, 0, 0)).s, 3), ROUND((rgb_to_hsl(255, 0, 0)).l, 3);
+----
+0.0	1.0	0.5
+
+# hsl_to_rgb round-trips red.
+query III
+SELECT (hsl_to_rgb(0, 1, 0.5)).r, (hsl_to_rgb(0, 1, 0.5)).g, (hsl_to_rgb(0, 1, 0.5)).b;
+----
+255	0	0
+
+# rgb_to_lab of white: L*≈100, a*≈0, b*≈0.
+query RRR
+SELECT ROUND((rgb_to_lab(255, 255, 255)).l, 1), ROUND((rgb_to_lab(255, 255, 255)).a, 1), ROUND((rgb_to_lab(255, 255, 255)).b, 1);
+----
+100.0	0.0	0.0
+
+# Invalid hex → NULL struct row (its fields are NULL).
+query I
+SELECT (from_hex('not-a-color')).r;
+----
+NULL
+
+# NULL input → NULL.
+query I
+SELECT (from_hex(NULL)).r;
+----
+NULL
+
+query T
+SELECT to_hex(NULL, 0, 0);
+----
+NULL
+
+statement ok
+USE memory;
+
+statement ok
+DETACH color;

@@ -1,0 +1,447 @@
+//! Color-space conversion scalars:
+//!
+//! * `to_hex(r INT, g INT, b INT) -> VARCHAR` — `#rrggbb`
+//! * `from_hex(hex VARCHAR) -> STRUCT(r INT, g INT, b INT)` — NULL if invalid
+//! * `rgb_to_hsl(r, g, b) -> STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)`
+//! * `hsl_to_rgb(h, s, l) -> STRUCT(r INT, g INT, b INT)`
+//! * `rgb_to_lab(r, g, b) -> STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)` (CIELAB, D65)
+//!
+//! RGB inputs are clamped to `0..=255`; any NULL operand yields a NULL result.
+
+use std::sync::Arc;
+
+use arrow_array::builder::{Float64Builder, Int32Builder, StringBuilder};
+use arrow_array::{ArrayRef, RecordBatch, StructArray};
+use arrow_buffer::NullBuffer;
+use arrow_schema::DataType;
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams, ScalarFunction};
+use vgi_rpc::{Result, RpcError};
+
+use crate::arrow_io::{
+    double_val, hsl_struct_fields, int_val, lab_struct_fields, rgb_struct_fields, text_str,
+};
+use crate::color::{self, Rgb};
+
+/// `to_hex(r, g, b) -> VARCHAR`.
+pub struct ToHex;
+
+impl ScalarFunction for ToHex {
+    fn name(&self) -> &str {
+        "to_hex"
+    }
+
+    fn metadata(&self) -> FunctionMetadata {
+        FunctionMetadata {
+            description: "Format an RGB triple (0-255, clamped) as a '#rrggbb' hex string".into(),
+            return_type: Some(DataType::Utf8),
+            ..Default::default()
+        }
+    }
+
+    fn argument_specs(&self) -> Vec<ArgSpec> {
+        vec![
+            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
+            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
+            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+        ]
+    }
+
+    fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
+        Ok(BindResponse::result(DataType::Utf8))
+    }
+
+    fn process(&self, params: &ProcessParams, batch: &RecordBatch) -> Result<RecordBatch> {
+        let (r, g, b) = (batch.column(0), batch.column(1), batch.column(2));
+        let rows = batch.num_rows();
+        let mut out = StringBuilder::new();
+        for i in 0..rows {
+            match (int_val(r, i)?, int_val(g, i)?, int_val(b, i)?) {
+                (Some(r), Some(g), Some(b)) => out.append_value(color::to_hex(
+                    color::clamp_channel(r),
+                    color::clamp_channel(g),
+                    color::clamp_channel(b),
+                )),
+                _ => out.append_null(),
+            }
+        }
+        let arr: ArrayRef = Arc::new(out.finish());
+        RecordBatch::try_new(params.output_schema.clone(), vec![arr])
+            .map_err(|e| RpcError::runtime_error(e.to_string()))
+    }
+}
+
+/// `from_hex(hex) -> STRUCT(r INT, g INT, b INT)`. Invalid hex → NULL row.
+pub struct FromHex;
+
+impl ScalarFunction for FromHex {
+    fn name(&self) -> &str {
+        "from_hex"
+    }
+
+    fn metadata(&self) -> FunctionMetadata {
+        FunctionMetadata {
+            description: "Parse '#rgb' / '#rrggbb' / '#rrggbbaa' into STRUCT(r, g, b); NULL if \
+                          the string is not a valid hex color"
+                .into(),
+            ..Default::default()
+        }
+    }
+
+    fn argument_specs(&self) -> Vec<ArgSpec> {
+        vec![ArgSpec::any_column("hex", 0, "Hex color string (VARCHAR)")]
+    }
+
+    fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
+        Ok(BindResponse::result(DataType::Struct(rgb_struct_fields())))
+    }
+
+    fn process(&self, params: &ProcessParams, batch: &RecordBatch) -> Result<RecordBatch> {
+        let col = batch.column(0);
+        let rows = batch.num_rows();
+        let mut rb = Int32Builder::new();
+        let mut gb = Int32Builder::new();
+        let mut bb = Int32Builder::new();
+        let mut valid: Vec<bool> = Vec::with_capacity(rows);
+        for i in 0..rows {
+            let parsed = text_str(col, i)?.and_then(color::from_hex);
+            match parsed {
+                Some(Rgb { r, g, b }) => {
+                    rb.append_value(r as i32);
+                    gb.append_value(g as i32);
+                    bb.append_value(b as i32);
+                    valid.push(true);
+                }
+                None => {
+                    rb.append_null();
+                    gb.append_null();
+                    bb.append_null();
+                    valid.push(false);
+                }
+            }
+        }
+        let arrays: Vec<ArrayRef> = vec![
+            Arc::new(rb.finish()),
+            Arc::new(gb.finish()),
+            Arc::new(bb.finish()),
+        ];
+        let out: ArrayRef = Arc::new(StructArray::new(
+            rgb_struct_fields(),
+            arrays,
+            Some(NullBuffer::from(valid)),
+        ));
+        RecordBatch::try_new(params.output_schema.clone(), vec![out])
+            .map_err(|e| RpcError::runtime_error(e.to_string()))
+    }
+}
+
+/// `rgb_to_hsl(r, g, b) -> STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)`.
+pub struct RgbToHsl;
+
+impl ScalarFunction for RgbToHsl {
+    fn name(&self) -> &str {
+        "rgb_to_hsl"
+    }
+
+    fn metadata(&self) -> FunctionMetadata {
+        FunctionMetadata {
+            description: "Convert an RGB triple (0-255) to HSL: STRUCT(h in [0,360), s in [0,1], \
+                          l in [0,1])"
+                .into(),
+            ..Default::default()
+        }
+    }
+
+    fn argument_specs(&self) -> Vec<ArgSpec> {
+        vec![
+            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
+            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
+            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+        ]
+    }
+
+    fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
+        Ok(BindResponse::result(DataType::Struct(hsl_struct_fields())))
+    }
+
+    fn process(&self, params: &ProcessParams, batch: &RecordBatch) -> Result<RecordBatch> {
+        let (r, g, b) = (batch.column(0), batch.column(1), batch.column(2));
+        let rows = batch.num_rows();
+        let mut hb = Float64Builder::new();
+        let mut sb = Float64Builder::new();
+        let mut lb = Float64Builder::new();
+        let mut valid: Vec<bool> = Vec::with_capacity(rows);
+        for i in 0..rows {
+            match (int_val(r, i)?, int_val(g, i)?, int_val(b, i)?) {
+                (Some(r), Some(g), Some(b)) => {
+                    let (h, s, l) = color::rgb_to_hsl(Rgb::new(
+                        color::clamp_channel(r),
+                        color::clamp_channel(g),
+                        color::clamp_channel(b),
+                    ));
+                    hb.append_value(h);
+                    sb.append_value(s);
+                    lb.append_value(l);
+                    valid.push(true);
+                }
+                _ => {
+                    hb.append_null();
+                    sb.append_null();
+                    lb.append_null();
+                    valid.push(false);
+                }
+            }
+        }
+        let arrays: Vec<ArrayRef> = vec![
+            Arc::new(hb.finish()),
+            Arc::new(sb.finish()),
+            Arc::new(lb.finish()),
+        ];
+        let out: ArrayRef = Arc::new(StructArray::new(
+            hsl_struct_fields(),
+            arrays,
+            Some(NullBuffer::from(valid)),
+        ));
+        RecordBatch::try_new(params.output_schema.clone(), vec![out])
+            .map_err(|e| RpcError::runtime_error(e.to_string()))
+    }
+}
+
+/// `hsl_to_rgb(h, s, l) -> STRUCT(r INT, g INT, b INT)`.
+pub struct HslToRgb;
+
+impl ScalarFunction for HslToRgb {
+    fn name(&self) -> &str {
+        "hsl_to_rgb"
+    }
+
+    fn metadata(&self) -> FunctionMetadata {
+        FunctionMetadata {
+            description: "Convert HSL (h degrees, s/l in [0,1]) to an RGB triple: \
+                          STRUCT(r, g, b) in 0-255"
+                .into(),
+            ..Default::default()
+        }
+    }
+
+    fn argument_specs(&self) -> Vec<ArgSpec> {
+        vec![
+            ArgSpec::any_column("h", 0, "Hue in degrees (DOUBLE)"),
+            ArgSpec::any_column("s", 1, "Saturation 0..1 (DOUBLE)"),
+            ArgSpec::any_column("l", 2, "Lightness 0..1 (DOUBLE)"),
+        ]
+    }
+
+    fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
+        Ok(BindResponse::result(DataType::Struct(rgb_struct_fields())))
+    }
+
+    fn process(&self, params: &ProcessParams, batch: &RecordBatch) -> Result<RecordBatch> {
+        let (h, s, l) = (batch.column(0), batch.column(1), batch.column(2));
+        let rows = batch.num_rows();
+        let mut rb = Int32Builder::new();
+        let mut gb = Int32Builder::new();
+        let mut bb = Int32Builder::new();
+        let mut valid: Vec<bool> = Vec::with_capacity(rows);
+        for i in 0..rows {
+            match (double_val(h, i)?, double_val(s, i)?, double_val(l, i)?) {
+                (Some(h), Some(s), Some(l)) => {
+                    let rgb = color::hsl_to_rgb(h, s, l);
+                    rb.append_value(rgb.r as i32);
+                    gb.append_value(rgb.g as i32);
+                    bb.append_value(rgb.b as i32);
+                    valid.push(true);
+                }
+                _ => {
+                    rb.append_null();
+                    gb.append_null();
+                    bb.append_null();
+                    valid.push(false);
+                }
+            }
+        }
+        let arrays: Vec<ArrayRef> = vec![
+            Arc::new(rb.finish()),
+            Arc::new(gb.finish()),
+            Arc::new(bb.finish()),
+        ];
+        let out: ArrayRef = Arc::new(StructArray::new(
+            rgb_struct_fields(),
+            arrays,
+            Some(NullBuffer::from(valid)),
+        ));
+        RecordBatch::try_new(params.output_schema.clone(), vec![out])
+            .map_err(|e| RpcError::runtime_error(e.to_string()))
+    }
+}
+
+/// `rgb_to_lab(r, g, b) -> STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)` (CIELAB, D65).
+pub struct RgbToLab;
+
+impl ScalarFunction for RgbToLab {
+    fn name(&self) -> &str {
+        "rgb_to_lab"
+    }
+
+    fn metadata(&self) -> FunctionMetadata {
+        FunctionMetadata {
+            description: "Convert an RGB triple (0-255) to CIELAB (D65): STRUCT(l, a, b)".into(),
+            ..Default::default()
+        }
+    }
+
+    fn argument_specs(&self) -> Vec<ArgSpec> {
+        vec![
+            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
+            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
+            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+        ]
+    }
+
+    fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
+        Ok(BindResponse::result(DataType::Struct(lab_struct_fields())))
+    }
+
+    fn process(&self, params: &ProcessParams, batch: &RecordBatch) -> Result<RecordBatch> {
+        let (r, g, b) = (batch.column(0), batch.column(1), batch.column(2));
+        let rows = batch.num_rows();
+        let mut lb = Float64Builder::new();
+        let mut ab = Float64Builder::new();
+        let mut bb = Float64Builder::new();
+        let mut valid: Vec<bool> = Vec::with_capacity(rows);
+        for i in 0..rows {
+            match (int_val(r, i)?, int_val(g, i)?, int_val(b, i)?) {
+                (Some(r), Some(g), Some(b)) => {
+                    let (l, a, bv) = color::rgb_to_lab(Rgb::new(
+                        color::clamp_channel(r),
+                        color::clamp_channel(g),
+                        color::clamp_channel(b),
+                    ));
+                    lb.append_value(l);
+                    ab.append_value(a);
+                    bb.append_value(bv);
+                    valid.push(true);
+                }
+                _ => {
+                    lb.append_null();
+                    ab.append_null();
+                    bb.append_null();
+                    valid.push(false);
+                }
+            }
+        }
+        let arrays: Vec<ArrayRef> = vec![
+            Arc::new(lb.finish()),
+            Arc::new(ab.finish()),
+            Arc::new(bb.finish()),
+        ];
+        let out: ArrayRef = Arc::new(StructArray::new(
+            lab_struct_fields(),
+            arrays,
+            Some(NullBuffer::from(valid)),
+        ));
+        RecordBatch::try_new(params.output_schema.clone(), vec![out])
+            .map_err(|e| RpcError::runtime_error(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::arrow_io::test_support::{batch_of, bound_type, run_scalar_on, run_scalar_text};
+    use arrow_array::cast::AsArray;
+    use arrow_array::types::{Float64Type, Int32Type};
+    use arrow_array::{Array, Float64Array, Int32Array};
+    use vgi::arguments::Arguments;
+
+    fn rgb_batch(
+        r: &[Option<i32>],
+        g: &[Option<i32>],
+        b: &[Option<i32>],
+    ) -> arrow_array::RecordBatch {
+        batch_of(vec![
+            ("r", Arc::new(Int32Array::from(r.to_vec())) as ArrayRef),
+            ("g", Arc::new(Int32Array::from(g.to_vec())) as ArrayRef),
+            ("b", Arc::new(Int32Array::from(b.to_vec())) as ArrayRef),
+        ])
+    }
+
+    #[test]
+    fn to_hex_red() {
+        let batch = rgb_batch(&[Some(255)], &[Some(0)], &[Some(0)]);
+        let out = run_scalar_on(&ToHex, batch, Arguments::default()).unwrap();
+        assert_eq!(out.as_string::<i32>().value(0), "#ff0000");
+    }
+
+    #[test]
+    fn to_hex_clamps_and_nulls() {
+        let batch = rgb_batch(
+            &[Some(300), None],
+            &[Some(-5), Some(0)],
+            &[Some(0), Some(0)],
+        );
+        let out = run_scalar_on(&ToHex, batch, Arguments::default()).unwrap();
+        assert_eq!(out.as_string::<i32>().value(0), "#ff0000");
+        assert!(out.is_null(1), "NULL operand → NULL");
+    }
+
+    #[test]
+    fn from_hex_struct() {
+        assert_eq!(bound_type(&FromHex), DataType::Struct(rgb_struct_fields()));
+        let out = run_scalar_text(
+            &FromHex,
+            &[Some("#ff0000"), Some("nothex"), None],
+            Arguments::default(),
+        )
+        .unwrap();
+        let s = out.as_struct();
+        assert_eq!(s.column(0).as_primitive::<Int32Type>().value(0), 255);
+        assert_eq!(s.column(1).as_primitive::<Int32Type>().value(0), 0);
+        assert_eq!(s.column(2).as_primitive::<Int32Type>().value(0), 0);
+        assert!(out.is_null(1), "invalid hex → NULL struct row");
+        assert!(out.is_null(2), "NULL input → NULL struct row");
+    }
+
+    #[test]
+    fn rgb_to_hsl_red() {
+        assert_eq!(bound_type(&RgbToHsl), DataType::Struct(hsl_struct_fields()));
+        let batch = rgb_batch(&[Some(255)], &[Some(0)], &[Some(0)]);
+        let out = run_scalar_on(&RgbToHsl, batch, Arguments::default()).unwrap();
+        let s = out.as_struct();
+        assert!((s.column(0).as_primitive::<Float64Type>().value(0) - 0.0).abs() < 1e-9);
+        assert!((s.column(1).as_primitive::<Float64Type>().value(0) - 1.0).abs() < 1e-9);
+        assert!((s.column(2).as_primitive::<Float64Type>().value(0) - 0.5).abs() < 1e-9);
+    }
+
+    #[test]
+    fn hsl_to_rgb_red() {
+        assert_eq!(bound_type(&HslToRgb), DataType::Struct(rgb_struct_fields()));
+        let batch = batch_of(vec![
+            (
+                "h",
+                Arc::new(Float64Array::from(vec![Some(0.0)])) as ArrayRef,
+            ),
+            (
+                "s",
+                Arc::new(Float64Array::from(vec![Some(1.0)])) as ArrayRef,
+            ),
+            (
+                "l",
+                Arc::new(Float64Array::from(vec![Some(0.5)])) as ArrayRef,
+            ),
+        ]);
+        let out = run_scalar_on(&HslToRgb, batch, Arguments::default()).unwrap();
+        let s = out.as_struct();
+        assert_eq!(s.column(0).as_primitive::<Int32Type>().value(0), 255);
+        assert_eq!(s.column(1).as_primitive::<Int32Type>().value(0), 0);
+        assert_eq!(s.column(2).as_primitive::<Int32Type>().value(0), 0);
+    }
+
+    #[test]
+    fn rgb_to_lab_white() {
+        assert_eq!(bound_type(&RgbToLab), DataType::Struct(lab_struct_fields()));
+        let batch = rgb_batch(&[Some(255)], &[Some(255)], &[Some(255)]);
+        let out = run_scalar_on(&RgbToLab, batch, Arguments::default()).unwrap();
+        let s = out.as_struct();
+        assert!((s.column(0).as_primitive::<Float64Type>().value(0) - 100.0).abs() < 0.01);
+    }
+}

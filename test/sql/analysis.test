@@ -1,0 +1,110 @@
+# name: test/sql/analysis.test
+# group: [vgi_color]
+#
+# Color analysis: delta_e (CIEDE2000), luminance, contrast_ratio, wcag_level,
+# is_dark, nearest_color_name, and the named_colors() table function. Floats are
+# asserted with ROUND() for determinism. Invalid hex flows to NULL.
+
+require-env VGI_COLOR_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'color' AS color (TYPE vgi, LOCATION '${VGI_COLOR_WORKER}');
+
+statement ok
+SET search_path = 'color.main';
+
+# Contrast of black vs white is exactly 21.
+query R
+SELECT ROUND(contrast_ratio('#000000', '#ffffff'), 1);
+----
+21.0
+
+# Contrast of a color with itself is 1.
+query R
+SELECT ROUND(contrast_ratio('#ffffff', '#ffffff'), 1);
+----
+1.0
+
+# WCAG level for black text on white is AAA.
+query T
+SELECT wcag_level('#000000', '#ffffff');
+----
+AAA
+
+# Luminance extremes.
+query R
+SELECT ROUND(luminance('#000000'), 4);
+----
+0.0
+
+query R
+SELECT ROUND(luminance('#ffffff'), 4);
+----
+1.0
+
+# delta_e of a color with itself is 0.
+query R
+SELECT ROUND(delta_e('#ff0000', '#ff0000'), 2);
+----
+0.0
+
+# delta_e of a known nonzero pair (white vs black) is large and stable.
+query R
+SELECT ROUND(delta_e('#ffffff', '#000000'), 2);
+----
+100.0
+
+# is_dark: black is dark, white is not.
+query T
+SELECT is_dark('#000000');
+----
+true
+
+query T
+SELECT is_dark('#ffffff');
+----
+false
+
+# nearest_color_name maps pure red to 'red'.
+query T
+SELECT nearest_color_name('#ff0000');
+----
+red
+
+# named_colors() returns a populated table.
+query I
+SELECT COUNT(*) > 0 FROM named_colors();
+----
+true
+
+# 'red' appears in the table at #ff0000.
+query T
+SELECT hex FROM named_colors() WHERE name = 'red';
+----
+#ff0000
+
+# Invalid hex → NULL (not an error).
+query R
+SELECT contrast_ratio('bogus', '#ffffff');
+----
+NULL
+
+query T
+SELECT nearest_color_name('bogus');
+----
+NULL
+
+# NULL input → NULL.
+query R
+SELECT luminance(NULL);
+----
+NULL
+
+statement ok
+USE memory;
+
+statement ok
+DETACH color;
