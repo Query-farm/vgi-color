@@ -44,6 +44,18 @@ impl ScalarFunction for DeltaE {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "CIEDE2000 Color Difference",
+                "Compute the CIEDE2000 (ΔE00) perceptual color difference between two sRGB hex \
+                 colors. Small values mean the colors are perceptually close; a ΔE00 near 1 is \
+                 roughly the just-noticeable difference. Returns NULL if either input is not a \
+                 valid hex color.",
+                "CIEDE2000 (ΔE00) difference between two hex colors, e.g. \
+                 `delta_e('#ff0000', '#ee0000')`.",
+                "delta_e, delta e, deltaE, CIEDE2000, color difference, perceptual difference, \
+                 color distance, dE00, similarity",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }
@@ -94,6 +106,16 @@ impl ScalarFunction for Luminance {
                 description: "Compute the WCAG relative luminance of mid-grey.".into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "WCAG Relative Luminance",
+                "Compute the WCAG 2.x relative luminance (0 for black, 1 for white) of an sRGB hex \
+                 color by linearizing each channel and weighting them 0.2126 R + 0.7152 G + \
+                 0.0722 B. Returns NULL if the input is not a valid hex color.",
+                "WCAG relative luminance (0..1) of a hex color, e.g. `luminance('#808080')`.",
+                "luminance, relative luminance, WCAG, brightness, perceived brightness, \
+                 grayscale weight, accessibility",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }
@@ -143,6 +165,18 @@ impl ScalarFunction for ContrastRatio {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "WCAG Contrast Ratio",
+                "Compute the WCAG 2.x contrast ratio between two sRGB hex colors, from 1.0 (no \
+                 contrast) to 21.0 (black on white). The order of arguments does not matter. Use \
+                 it to check text legibility and accessibility. Returns NULL if either input is \
+                 not a valid hex color.",
+                "WCAG contrast ratio (1..21) between two hex colors, e.g. \
+                 `contrast_ratio('#000000', '#ffffff')` → 21.",
+                "contrast_ratio, contrast, WCAG, accessibility, legibility, readability, text \
+                 contrast, ratio",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }
@@ -197,6 +231,18 @@ impl ScalarFunction for WcagLevel {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "WCAG Conformance Level",
+                "Classify the WCAG 2.x conformance level for normal-size text given a foreground \
+                 and background sRGB hex color, returning 'AAA' (>=7:1), 'AA' (>=4.5:1), \
+                 'AA Large' (>=3:1) or 'fail'. Returns NULL if either input is not a valid hex \
+                 color.",
+                "WCAG conformance level for text on a background, e.g. \
+                 `wcag_level('#595959', '#ffffff')`.",
+                "wcag_level, WCAG, conformance, AA, AAA, accessibility, contrast level, \
+                 compliance, a11y",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }
@@ -253,6 +299,16 @@ impl ScalarFunction for IsDark {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "Detect Dark Color",
+                "Return TRUE when an sRGB hex color's WCAG relative luminance is below 0.5, i.e. \
+                 the color is dark enough that light foreground text reads better on it. Returns \
+                 NULL if the input is not a valid hex color.",
+                "True if a hex color is dark (luminance < 0.5), e.g. `is_dark('#001f3f')`.",
+                "is_dark, dark color, light or dark, luminance threshold, theme, foreground \
+                 choice, brightness",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }
@@ -301,6 +357,17 @@ impl ScalarFunction for NearestColorName {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "Nearest Named Color",
+                "Return the name of the CSS named color closest to a given sRGB hex color, measured \
+                 by CIEDE2000 (ΔE00) perceptual distance (ties resolve to the first match in CSS \
+                 table order). Returns NULL if the input is not a valid hex color.",
+                "Closest CSS named color to a hex value, e.g. `nearest_color_name('#ff6347')` → \
+                 'tomato'.",
+                "nearest_color_name, named color, closest color, color name, CSS color, label \
+                 color, classify color, dE",
+                "scalar/analysis.rs",
+            ),
             ..Default::default()
         }
     }

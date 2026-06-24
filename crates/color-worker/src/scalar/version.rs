@@ -26,6 +26,14 @@ impl ScalarFunction for ColorVersion {
                 description: "Return the color worker version string.".into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "Color Worker Version",
+                "Return the semantic version string of the running color worker binary. Useful for \
+                 diagnostics and confirming which build is attached.",
+                "Return the color worker version string, e.g. `color_version()` → '0.1.0'.",
+                "version, build version, color_version, diagnostics, worker version, semver",
+                "scalar/version.rs",
+            ),
             ..Default::default()
         }
     }

@@ -23,6 +23,7 @@
 
 mod arrow_io;
 mod color;
+mod meta;
 mod scalar;
 mod table;
 
@@ -47,6 +48,17 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 .to_string(),
         ),
         tags: vec![
+            (
+                "vgi.title".to_string(),
+                "Color Science & Accessibility".to_string(),
+            ),
+            (
+                "vgi.keywords".to_string(),
+                "color, colour, color science, color space, RGB, HSL, hex, CIELAB, Lab, CIEDE2000, \
+                 delta E, color difference, WCAG, contrast, contrast ratio, luminance, \
+                 accessibility, named colors, palette"
+                    .to_string(),
+            ),
             (
                 "vgi.description_llm".to_string(),
                 "Color-science functions over Apache Arrow. Convert colors between sRGB hex, RGB, \
@@ -89,6 +101,27 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             tags: vec![
+                ("vgi.title".to_string(), "Color — main".to_string()),
+                (
+                    "vgi.keywords".to_string(),
+                    "color, colour, to_hex, from_hex, rgb_to_hsl, hsl_to_rgb, rgb_to_lab, \
+                     delta_e, luminance, contrast_ratio, wcag_level, is_dark, \
+                     nearest_color_name, named_colors, color space, CIELAB, CIEDE2000, WCAG, \
+                     contrast, accessibility"
+                        .to_string(),
+                ),
+                // VGI123 classifying tags (bare keys: domain/category/topic) for faceting.
+                ("domain".to_string(), "color-science".to_string()),
+                ("category".to_string(), "conversion".to_string()),
+                (
+                    "topic".to_string(),
+                    "color-spaces-and-accessibility".to_string(),
+                ),
+                (
+                    "vgi.source_url".to_string(),
+                    "https://github.com/Query-farm/vgi-color/blob/main/crates/color-worker/src/main.rs"
+                        .to_string(),
+                ),
                 (
                     "vgi.description_llm".to_string(),
                     "Color-science functions: convert between sRGB hex, RGB, HSL and CIELAB; \
@@ -101,6 +134,18 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     "vgi.description_md".to_string(),
                     "Color-space conversion, CIEDE2000 color-difference and WCAG \
                      contrast/accessibility functions over Apache Arrow."
+                        .to_string(),
+                ),
+                // VGI506 representative example queries for the schema.
+                (
+                    "vgi.example_queries".to_string(),
+                    "SELECT color.main.to_hex(255, 99, 71);\n\
+                     SELECT (color.main.from_hex('#ff6347')).r AS red;\n\
+                     SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;\n\
+                     SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);\n\
+                     SELECT color.main.wcag_level('#595959', '#ffffff');\n\
+                     SELECT color.main.nearest_color_name('#ff6347');\n\
+                     SELECT * FROM color.main.named_colors() ORDER BY name LIMIT 5;"
                         .to_string(),
                 ),
             ],

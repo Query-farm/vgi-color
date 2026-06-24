@@ -12,6 +12,41 @@ use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::color;
 
+/// Guaranteed-runnable, catalog-qualified examples (VGI509). Each `sql` is
+/// self-contained and re-runnable against an attached `color` worker. We omit
+/// `expected_result` deliberately — the linter only needs each query to execute
+/// cleanly, and pinning exact floating-point output would be brittle.
+const EXECUTABLE_EXAMPLES: &str = r#"[
+  {
+    "description": "Format an RGB triple as a '#rrggbb' hex string.",
+    "sql": "SELECT color.main.to_hex(255, 99, 71) AS hex"
+  },
+  {
+    "description": "Parse a hex color into its red, green and blue channels.",
+    "sql": "SELECT (color.main.from_hex('#ff6347')).r AS red, (color.main.from_hex('#ff6347')).g AS green, (color.main.from_hex('#ff6347')).b AS blue"
+  },
+  {
+    "description": "Convert pure red into hue, saturation and lightness.",
+    "sql": "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue, (color.main.rgb_to_hsl(255, 0, 0)).s AS saturation, (color.main.rgb_to_hsl(255, 0, 0)).l AS lightness"
+  },
+  {
+    "description": "Measure the WCAG contrast ratio between black and white.",
+    "sql": "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1) AS ratio"
+  },
+  {
+    "description": "Classify the WCAG conformance level of dark-grey text on white.",
+    "sql": "SELECT color.main.wcag_level('#595959', '#ffffff') AS level"
+  },
+  {
+    "description": "Find the closest CSS named color to a hex value.",
+    "sql": "SELECT color.main.nearest_color_name('#ff6347') AS name"
+  },
+  {
+    "description": "List the first few CSS named colors with their hex values.",
+    "sql": "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"
+  }
+]"#;
+
 pub struct NamedColors;
 
 fn output_schema() -> SchemaRef {
@@ -27,16 +62,28 @@ impl TableFunction for NamedColors {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let mut tags = crate::meta::object_tags(
+            "CSS Named Colors Catalog",
+            "List every CSS named color the worker knows, each paired with its '#rrggbb' sRGB hex \
+             value. Use it to discover valid color names, to map names to hex, or as the lookup \
+             table behind nearest_color_name.",
+            "List every CSS named color with its `#rrggbb` hex value. Columns: `name`, `hex`.",
+            "named_colors, CSS colors, color names, named color table, color catalog, discovery, \
+             list colors, hex lookup",
+            "table/named.rs",
+        );
+        tags.push((
+            "vgi.columns_md".into(),
+            "| column | type | description |\n\
+             |---|---|---|\n\
+             | `name` | VARCHAR | The CSS color name, e.g. `tomato`, `rebeccapurple`. |\n\
+             | `hex` | VARCHAR | The color's `#rrggbb` sRGB hex value. |"
+                .into(),
+        ));
+        tags.push(("vgi.executable_examples".into(), EXECUTABLE_EXAMPLES.into()));
         FunctionMetadata {
             description: "List every CSS named color with its '#rrggbb' hex value".into(),
-            tags: vec![(
-                "vgi.columns_md".into(),
-                "| column | type | description |\n\
-                 |---|---|---|\n\
-                 | `name` | VARCHAR | The CSS color name, e.g. `tomato`, `rebeccapurple`. |\n\
-                 | `hex` | VARCHAR | The color's `#rrggbb` sRGB hex value. |"
-                    .into(),
-            )],
+            tags,
             ..Default::default()
         }
     }
