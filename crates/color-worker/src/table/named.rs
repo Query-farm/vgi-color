@@ -73,7 +73,7 @@ impl TableFunction for NamedColors {
             "table/named.rs",
         );
         tags.push((
-            "vgi.columns_md".into(),
+            "vgi.result_columns_md".into(),
             "| column | type | description |\n\
              |---|---|---|\n\
              | `name` | VARCHAR | The CSS color name, e.g. `tomato`, `rebeccapurple`. |\n\

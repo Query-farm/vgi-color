@@ -60,7 +60,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             (
-                "vgi.description_llm".to_string(),
+                "vgi.doc_llm".to_string(),
                 "Color-science functions over Apache Arrow. Convert colors between sRGB hex, RGB, \
                  HSL and CIELAB; measure perceptual color difference with CIEDE2000 (ΔE00); \
                  compute WCAG relative luminance and contrast ratios and classify WCAG \
@@ -70,7 +70,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             (
-                "vgi.description_md".to_string(),
+                "vgi.doc_md".to_string(),
                 "# color\n\nColor science over Apache Arrow: color-space conversions, CIEDE2000 \
                  (ΔE00) color difference, and WCAG contrast/accessibility.\n\nScalars: `to_hex`, \
                  `from_hex`, `rgb_to_hsl`, `hsl_to_rgb`, `rgb_to_lab`, `delta_e`, `luminance`, \
@@ -123,7 +123,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                         .to_string(),
                 ),
                 (
-                    "vgi.description_llm".to_string(),
+                    "vgi.doc_llm".to_string(),
                     "Color-science functions: convert between sRGB hex, RGB, HSL and CIELAB; \
                      measure CIEDE2000 (ΔE00) color difference; compute WCAG relative luminance \
                      and contrast ratio and classify WCAG conformance; test whether a color is \
@@ -131,7 +131,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                         .to_string(),
                 ),
                 (
-                    "vgi.description_md".to_string(),
+                    "vgi.doc_md".to_string(),
                     "Color-space conversion, CIEDE2000 color-difference and WCAG \
                      contrast/accessibility functions over Apache Arrow."
                         .to_string(),
