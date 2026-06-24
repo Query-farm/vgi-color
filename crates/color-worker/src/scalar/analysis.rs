@@ -14,7 +14,10 @@ use std::sync::Arc;
 use arrow_array::builder::{BooleanBuilder, Float64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::DataType;
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams, ScalarFunction};
+use vgi::{
+    ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams,
+    ScalarFunction,
+};
 use vgi_rpc::{Result, RpcError};
 
 use crate::arrow_io::text_str;
@@ -34,6 +37,13 @@ impl ScalarFunction for DeltaE {
                           either is not a valid hex color"
                 .into(),
             return_type: Some(DataType::Float64),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.delta_e('#ff0000', '#ee0000');".into(),
+                description: "Measure the perceptual CIEDE2000 (ΔE00) difference between two \
+                              near-identical reds."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -79,6 +89,11 @@ impl ScalarFunction for Luminance {
         FunctionMetadata {
             description: "WCAG relative luminance (0..1) of a hex color; NULL if invalid".into(),
             return_type: Some(DataType::Float64),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.luminance('#808080');".into(),
+                description: "Compute the WCAG relative luminance of mid-grey.".into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -121,6 +136,13 @@ impl ScalarFunction for ContrastRatio {
                           invalid"
                 .into(),
             return_type: Some(DataType::Float64),
+            examples: vec![FunctionExample {
+                sql: "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);".into(),
+                description: "Compute the WCAG contrast ratio between black and white (21.0, the \
+                              maximum)."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -168,6 +190,13 @@ impl ScalarFunction for WcagLevel {
                           given foreground/background hex colors; NULL if either is invalid"
                 .into(),
             return_type: Some(DataType::Utf8),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.wcag_level('#595959', '#ffffff');".into(),
+                description: "Classify the WCAG conformance level of dark-grey text on a white \
+                              background."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -217,6 +246,13 @@ impl ScalarFunction for IsDark {
                           invalid"
                 .into(),
             return_type: Some(DataType::Boolean),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.is_dark('#001f3f');".into(),
+                description: "Test whether a navy background is dark (so light text should be \
+                              used)."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -258,6 +294,13 @@ impl ScalarFunction for NearestColorName {
             description: "Closest CSS named color to a hex color, by CIEDE2000 ΔE; NULL if invalid"
                 .into(),
             return_type: Some(DataType::Utf8),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.nearest_color_name('#ff6347');".into(),
+                description: "Find the closest CSS named color to a given hex value (by CIEDE2000 \
+                              ΔE)."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }

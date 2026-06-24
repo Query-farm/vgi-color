@@ -14,12 +14,12 @@ science** — color-space conversions, **CIEDE2000** color difference (ΔE), and
 The color engine implements every transform **directly from the standard
 formulas** — no third-party color crate. A `palette`-based engine was considered;
 implementing the formulas directly was chosen for zero added dependencies and
-full MSRV control (workspace `rust-version = 1.86`).
+full MSRV control (workspace `rust-version = 1.90`).
 
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.5.0", arrow 58
+Cargo.toml                          workspace; pins vgi = "0.9.0", arrow 59
 crates/color-worker/
   src/main.rs                       Worker::new(); registers scalars + table
   src/lib.rs                        lib target re-exporting `color` for integration tests

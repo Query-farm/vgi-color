@@ -29,6 +29,14 @@ impl TableFunction for NamedColors {
     fn metadata(&self) -> FunctionMetadata {
         FunctionMetadata {
             description: "List every CSS named color with its '#rrggbb' hex value".into(),
+            tags: vec![(
+                "vgi.columns_md".into(),
+                "| column | type | description |\n\
+                 |---|---|---|\n\
+                 | `name` | VARCHAR | The CSS color name, e.g. `tomato`, `rebeccapurple`. |\n\
+                 | `hex` | VARCHAR | The color's `#rrggbb` sRGB hex value. |"
+                    .into(),
+            )],
             ..Default::default()
         }
     }

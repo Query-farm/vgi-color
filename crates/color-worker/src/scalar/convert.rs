@@ -14,7 +14,10 @@ use arrow_array::builder::{Float64Builder, Int32Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch, StructArray};
 use arrow_buffer::NullBuffer;
 use arrow_schema::DataType;
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams, ScalarFunction};
+use vgi::{
+    ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams,
+    ScalarFunction,
+};
 use vgi_rpc::{Result, RpcError};
 
 use crate::arrow_io::{
@@ -34,6 +37,11 @@ impl ScalarFunction for ToHex {
         FunctionMetadata {
             description: "Format an RGB triple (0-255, clamped) as a '#rrggbb' hex string".into(),
             return_type: Some(DataType::Utf8),
+            examples: vec![FunctionExample {
+                sql: "SELECT color.main.to_hex(255, 99, 71);".into(),
+                description: "Format the RGB triple for 'tomato' as a '#rrggbb' hex string.".into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -83,6 +91,12 @@ impl ScalarFunction for FromHex {
             description: "Parse '#rgb' / '#rrggbb' / '#rrggbbaa' into STRUCT(r, g, b); NULL if \
                           the string is not a valid hex color"
                 .into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT (color.main.from_hex('#ff6347')).*;".into(),
+                description: "Parse a '#rrggbb' hex string into its red, green and blue channels."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -147,6 +161,11 @@ impl ScalarFunction for RgbToHsl {
             description: "Convert an RGB triple (0-255) to HSL: STRUCT(h in [0,360), s in [0,1], \
                           l in [0,1])"
                 .into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT (color.main.rgb_to_hsl(255, 0, 0)).*;".into(),
+                description: "Convert pure red to its hue, saturation and lightness.".into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -219,6 +238,12 @@ impl ScalarFunction for HslToRgb {
             description: "Convert HSL (h degrees, s/l in [0,1]) to an RGB triple: \
                           STRUCT(r, g, b) in 0-255"
                 .into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).*;".into(),
+                description: "Convert fully-saturated green (hue 120°) back to an RGB triple."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
@@ -285,6 +310,11 @@ impl ScalarFunction for RgbToLab {
     fn metadata(&self) -> FunctionMetadata {
         FunctionMetadata {
             description: "Convert an RGB triple (0-255) to CIELAB (D65): STRUCT(l, a, b)".into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT (color.main.rgb_to_lab(255, 255, 255)).*;".into(),
+                description: "Convert white to CIELAB (D65) lightness L* and a*/b* chroma.".into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }
