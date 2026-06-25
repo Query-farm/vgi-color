@@ -52,9 +52,17 @@ impl ScalarFunction for DeltaE {
                  valid hex color.",
                 "CIEDE2000 (ΔE00) difference between two hex colors, e.g. \
                  `delta_e('#ff0000', '#ee0000')`.",
-                "delta_e, delta e, deltaE, CIEDE2000, color difference, perceptual difference, \
-                 color distance, dE00, similarity",
-                "scalar/analysis.rs",
+                &[
+                    "delta_e",
+                    "delta e",
+                    "deltaE",
+                    "CIEDE2000",
+                    "color difference",
+                    "perceptual difference",
+                    "color distance",
+                    "dE00",
+                    "similarity",
+                ],
             ),
             ..Default::default()
         }
@@ -62,8 +70,18 @@ impl ScalarFunction for DeltaE {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("hex_a", 0, "First hex color (VARCHAR)"),
-            ArgSpec::any_column("hex_b", 1, "Second hex color (VARCHAR)"),
+            ArgSpec::column(
+                "hex_a",
+                0,
+                "varchar",
+                "First color to compare, as an sRGB hex string (e.g. '#ff0000')",
+            ),
+            ArgSpec::column(
+                "hex_b",
+                1,
+                "varchar",
+                "Second color to compare, as an sRGB hex string (e.g. '#ee0000')",
+            ),
         ]
     }
 
@@ -112,16 +130,27 @@ impl ScalarFunction for Luminance {
                  color by linearizing each channel and weighting them 0.2126 R + 0.7152 G + \
                  0.0722 B. Returns NULL if the input is not a valid hex color.",
                 "WCAG relative luminance (0..1) of a hex color, e.g. `luminance('#808080')`.",
-                "luminance, relative luminance, WCAG, brightness, perceived brightness, \
-                 grayscale weight, accessibility",
-                "scalar/analysis.rs",
+                &[
+                    "luminance",
+                    "relative luminance",
+                    "WCAG",
+                    "brightness",
+                    "perceived brightness",
+                    "grayscale weight",
+                    "accessibility",
+                ],
             ),
             ..Default::default()
         }
     }
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::any_column("hex", 0, "Hex color (VARCHAR)")]
+        vec![ArgSpec::column(
+            "hex",
+            0,
+            "varchar",
+            "The color to analyze, as an sRGB hex string (e.g. '#808080')",
+        )]
     }
 
     fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
@@ -173,9 +202,16 @@ impl ScalarFunction for ContrastRatio {
                  not a valid hex color.",
                 "WCAG contrast ratio (1..21) between two hex colors, e.g. \
                  `contrast_ratio('#000000', '#ffffff')` → 21.",
-                "contrast_ratio, contrast, WCAG, accessibility, legibility, readability, text \
-                 contrast, ratio",
-                "scalar/analysis.rs",
+                &[
+                    "contrast_ratio",
+                    "contrast",
+                    "WCAG",
+                    "accessibility",
+                    "legibility",
+                    "readability",
+                    "text contrast",
+                    "ratio",
+                ],
             ),
             ..Default::default()
         }
@@ -183,8 +219,18 @@ impl ScalarFunction for ContrastRatio {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("hex_a", 0, "First hex color (VARCHAR)"),
-            ArgSpec::any_column("hex_b", 1, "Second hex color (VARCHAR)"),
+            ArgSpec::column(
+                "hex_a",
+                0,
+                "varchar",
+                "First color to compare, as an sRGB hex string (e.g. '#ff0000')",
+            ),
+            ArgSpec::column(
+                "hex_b",
+                1,
+                "varchar",
+                "Second color to compare, as an sRGB hex string (e.g. '#ee0000')",
+            ),
         ]
     }
 
@@ -239,9 +285,17 @@ impl ScalarFunction for WcagLevel {
                  color.",
                 "WCAG conformance level for text on a background, e.g. \
                  `wcag_level('#595959', '#ffffff')`.",
-                "wcag_level, WCAG, conformance, AA, AAA, accessibility, contrast level, \
-                 compliance, a11y",
-                "scalar/analysis.rs",
+                &[
+                    "wcag_level",
+                    "WCAG",
+                    "conformance",
+                    "AA",
+                    "AAA",
+                    "accessibility",
+                    "contrast level",
+                    "compliance",
+                    "a11y",
+                ],
             ),
             ..Default::default()
         }
@@ -249,8 +303,18 @@ impl ScalarFunction for WcagLevel {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("hex_fg", 0, "Foreground (text) hex color (VARCHAR)"),
-            ArgSpec::any_column("hex_bg", 1, "Background hex color (VARCHAR)"),
+            ArgSpec::column(
+                "hex_fg",
+                0,
+                "varchar",
+                "Foreground (text) color, as an sRGB hex string",
+            ),
+            ArgSpec::column(
+                "hex_bg",
+                1,
+                "varchar",
+                "Background color the text sits on, as an sRGB hex string",
+            ),
         ]
     }
 
@@ -305,16 +369,27 @@ impl ScalarFunction for IsDark {
                  the color is dark enough that light foreground text reads better on it. Returns \
                  NULL if the input is not a valid hex color.",
                 "True if a hex color is dark (luminance < 0.5), e.g. `is_dark('#001f3f')`.",
-                "is_dark, dark color, light or dark, luminance threshold, theme, foreground \
-                 choice, brightness",
-                "scalar/analysis.rs",
+                &[
+                    "is_dark",
+                    "dark color",
+                    "light or dark",
+                    "luminance threshold",
+                    "theme",
+                    "foreground choice",
+                    "brightness",
+                ],
             ),
             ..Default::default()
         }
     }
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::any_column("hex", 0, "Hex color (VARCHAR)")]
+        vec![ArgSpec::column(
+            "hex",
+            0,
+            "varchar",
+            "The color to analyze, as an sRGB hex string (e.g. '#808080')",
+        )]
     }
 
     fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
@@ -364,16 +439,28 @@ impl ScalarFunction for NearestColorName {
                  table order). Returns NULL if the input is not a valid hex color.",
                 "Closest CSS named color to a hex value, e.g. `nearest_color_name('#ff6347')` → \
                  'tomato'.",
-                "nearest_color_name, named color, closest color, color name, CSS color, label \
-                 color, classify color, dE",
-                "scalar/analysis.rs",
+                &[
+                    "nearest_color_name",
+                    "named color",
+                    "closest color",
+                    "color name",
+                    "CSS color",
+                    "label color",
+                    "classify color",
+                    "dE",
+                ],
             ),
             ..Default::default()
         }
     }
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::any_column("hex", 0, "Hex color (VARCHAR)")]
+        vec![ArgSpec::column(
+            "hex",
+            0,
+            "varchar",
+            "The color to analyze, as an sRGB hex string (e.g. '#808080')",
+        )]
     }
 
     fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {

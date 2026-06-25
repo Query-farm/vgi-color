@@ -49,10 +49,26 @@ const EXECUTABLE_EXAMPLES: &str = r#"[
 
 pub struct NamedColors;
 
-fn output_schema() -> SchemaRef {
+/// A non-nullable VARCHAR column field carrying a `comment` (surfaced via
+/// `duckdb_columns().comment`, VGI202) so every column is documented wherever the
+/// schema appears.
+fn commented(name: &str, comment: &str) -> Field {
+    Field::new(name, DataType::Utf8, false).with_metadata(std::collections::HashMap::from([(
+        "comment".to_string(),
+        comment.to_string(),
+    )]))
+}
+
+/// Output schema of `named_colors`: `(name VARCHAR, hex VARCHAR)`. Shared by the
+/// table-function bind and the catalog `CatTable` (so the parameterless function
+/// is also exposed as a plain table, VGI311). Each column carries a comment.
+pub fn output_schema() -> SchemaRef {
     Arc::new(Schema::new(vec![
-        Field::new("name", DataType::Utf8, false),
-        Field::new("hex", DataType::Utf8, false),
+        commented(
+            "name",
+            "The CSS Color Module Level 4 color name, e.g. 'tomato' or 'rebeccapurple'.",
+        ),
+        commented("hex", "The color's lowercase '#rrggbb' sRGB hex value."),
     ]))
 }
 
@@ -68,9 +84,16 @@ impl TableFunction for NamedColors {
              value. Use it to discover valid color names, to map names to hex, or as the lookup \
              table behind nearest_color_name.",
             "List every CSS named color with its `#rrggbb` hex value. Columns: `name`, `hex`.",
-            "named_colors, CSS colors, color names, named color table, color catalog, discovery, \
-             list colors, hex lookup",
-            "table/named.rs",
+            &[
+                "named_colors",
+                "CSS colors",
+                "color names",
+                "named color table",
+                "color catalog",
+                "discovery",
+                "list colors",
+                "hex lookup",
+            ],
         );
         tags.push((
             "vgi.result_columns_md".into(),

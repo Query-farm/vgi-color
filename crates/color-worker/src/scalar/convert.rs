@@ -48,9 +48,16 @@ impl ScalarFunction for ToHex {
                  lowercase '#rrggbb' sRGB hex color string. Returns NULL if any channel is NULL.",
                 "Format an RGB triple as a `#rrggbb` hex string, e.g. `to_hex(255, 99, 71)` → \
                  `#ff6347`.",
-                "to_hex, rgb to hex, hex color, hex string, rrggbb, format color, encode color, \
-                 sRGB",
-                "scalar/convert.rs",
+                &[
+                    "to_hex",
+                    "rgb to hex",
+                    "hex color",
+                    "hex string",
+                    "rrggbb",
+                    "format color",
+                    "encode color",
+                    "sRGB",
+                ],
             ),
             ..Default::default()
         }
@@ -58,9 +65,24 @@ impl ScalarFunction for ToHex {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
-            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
-            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+            ArgSpec::column(
+                "r",
+                0,
+                "int32",
+                "Red channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "g",
+                1,
+                "int32",
+                "Green channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "b",
+                2,
+                "int32",
+                "Blue channel, 0-255 (out-of-range values clamped)",
+            ),
         ]
     }
 
@@ -114,16 +136,28 @@ impl ScalarFunction for FromHex {
                  is NULL or not a valid hex color (alpha is accepted but dropped).",
                 "Parse a hex color into a `STRUCT(r, g, b)`, e.g. `from_hex('#ff6347')` → \
                  `(255, 99, 71)`.",
-                "from_hex, hex to rgb, parse hex, decode color, hex color, rrggbb, color parsing, \
-                 sRGB",
-                "scalar/convert.rs",
+                &[
+                    "from_hex",
+                    "hex to rgb",
+                    "parse hex",
+                    "decode color",
+                    "hex color",
+                    "rrggbb",
+                    "color parsing",
+                    "sRGB",
+                ],
             ),
             ..Default::default()
         }
     }
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::any_column("hex", 0, "Hex color string (VARCHAR)")]
+        vec![ArgSpec::column(
+            "hex",
+            0,
+            "varchar",
+            "sRGB hex color to parse: '#rgb', '#rrggbb' or '#rrggbbaa' (alpha is dropped)",
+        )]
     }
 
     fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
@@ -193,9 +227,16 @@ impl ScalarFunction for RgbToHsl {
                  returning STRUCT(h in [0,360) degrees, s in [0,1], l in [0,1]). Returns a NULL \
                  struct if any channel is NULL.",
                 "Convert RGB to HSL, e.g. `rgb_to_hsl(255, 0, 0)` → `(h := 0, s := 1, l := 0.5)`.",
-                "rgb_to_hsl, rgb to hsl, hue saturation lightness, color space conversion, HSL, \
-                 hue, saturation, lightness",
-                "scalar/convert.rs",
+                &[
+                    "rgb_to_hsl",
+                    "rgb to hsl",
+                    "hue saturation lightness",
+                    "color space conversion",
+                    "HSL",
+                    "hue",
+                    "saturation",
+                    "lightness",
+                ],
             ),
             ..Default::default()
         }
@@ -203,9 +244,24 @@ impl ScalarFunction for RgbToHsl {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
-            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
-            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+            ArgSpec::column(
+                "r",
+                0,
+                "int32",
+                "Red channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "g",
+                1,
+                "int32",
+                "Green channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "b",
+                2,
+                "int32",
+                "Blue channel, 0-255 (out-of-range values clamped)",
+            ),
         ]
     }
 
@@ -282,9 +338,14 @@ impl ScalarFunction for HslToRgb {
                  any component is NULL.",
                 "Convert HSL to RGB, e.g. `hsl_to_rgb(120, 1.0, 0.5)` → `(r := 0, g := 255, \
                  b := 0)`.",
-                "hsl_to_rgb, hsl to rgb, hue saturation lightness, color space conversion, RGB, \
-                 from hsl",
-                "scalar/convert.rs",
+                &[
+                    "hsl_to_rgb",
+                    "hsl to rgb",
+                    "hue saturation lightness",
+                    "color space conversion",
+                    "RGB",
+                    "from hsl",
+                ],
             ),
             ..Default::default()
         }
@@ -292,9 +353,14 @@ impl ScalarFunction for HslToRgb {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("h", 0, "Hue in degrees (DOUBLE)"),
-            ArgSpec::any_column("s", 1, "Saturation 0..1 (DOUBLE)"),
-            ArgSpec::any_column("l", 2, "Lightness 0..1 (DOUBLE)"),
+            ArgSpec::column("h", 0, "double", "Hue angle in degrees (wraps modulo 360)"),
+            ArgSpec::column(
+                "s",
+                1,
+                "double",
+                "Saturation from 0 (grey) to 1 (full color)",
+            ),
+            ArgSpec::column("l", 2, "double", "Lightness from 0 (black) to 1 (white)"),
         ]
     }
 
@@ -365,9 +431,16 @@ impl ScalarFunction for RgbToLab {
                  channel is NULL.",
                 "Convert RGB to CIELAB (D65), e.g. `rgb_to_lab(255, 255, 255)` → `(l ≈ 100, \
                  a ≈ 0, b ≈ 0)`.",
-                "rgb_to_lab, rgb to lab, CIELAB, Lab color, L*a*b*, perceptual color space, D65, \
-                 color space conversion",
-                "scalar/convert.rs",
+                &[
+                    "rgb_to_lab",
+                    "rgb to lab",
+                    "CIELAB",
+                    "Lab color",
+                    "L*a*b*",
+                    "perceptual color space",
+                    "D65",
+                    "color space conversion",
+                ],
             ),
             ..Default::default()
         }
@@ -375,9 +448,24 @@ impl ScalarFunction for RgbToLab {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::any_column("r", 0, "Red channel 0-255 (INT)"),
-            ArgSpec::any_column("g", 1, "Green channel 0-255 (INT)"),
-            ArgSpec::any_column("b", 2, "Blue channel 0-255 (INT)"),
+            ArgSpec::column(
+                "r",
+                0,
+                "int32",
+                "Red channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "g",
+                1,
+                "int32",
+                "Green channel, 0-255 (out-of-range values clamped)",
+            ),
+            ArgSpec::column(
+                "b",
+                2,
+                "int32",
+                "Blue channel, 0-255 (out-of-range values clamped)",
+            ),
         ]
     }
 

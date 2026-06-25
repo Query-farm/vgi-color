@@ -54,10 +54,27 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
             (
                 "vgi.keywords".to_string(),
-                "color, colour, color science, color space, RGB, HSL, hex, CIELAB, Lab, CIEDE2000, \
-                 delta E, color difference, WCAG, contrast, contrast ratio, luminance, \
-                 accessibility, named colors, palette"
-                    .to_string(),
+                meta::keywords_json(&[
+                    "color",
+                    "colour",
+                    "color science",
+                    "color space",
+                    "RGB",
+                    "HSL",
+                    "hex",
+                    "CIELAB",
+                    "Lab",
+                    "CIEDE2000",
+                    "delta E",
+                    "color difference",
+                    "WCAG",
+                    "contrast",
+                    "contrast ratio",
+                    "luminance",
+                    "accessibility",
+                    "named colors",
+                    "palette",
+                ]),
             ),
             (
                 "vgi.doc_llm".to_string(),
@@ -104,11 +121,28 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ("vgi.title".to_string(), "Color — main".to_string()),
                 (
                     "vgi.keywords".to_string(),
-                    "color, colour, to_hex, from_hex, rgb_to_hsl, hsl_to_rgb, rgb_to_lab, \
-                     delta_e, luminance, contrast_ratio, wcag_level, is_dark, \
-                     nearest_color_name, named_colors, color space, CIELAB, CIEDE2000, WCAG, \
-                     contrast, accessibility"
-                        .to_string(),
+                    meta::keywords_json(&[
+                        "color",
+                        "colour",
+                        "to_hex",
+                        "from_hex",
+                        "rgb_to_hsl",
+                        "hsl_to_rgb",
+                        "rgb_to_lab",
+                        "delta_e",
+                        "luminance",
+                        "contrast_ratio",
+                        "wcag_level",
+                        "is_dark",
+                        "nearest_color_name",
+                        "named_colors",
+                        "color space",
+                        "CIELAB",
+                        "CIEDE2000",
+                        "WCAG",
+                        "contrast",
+                        "accessibility",
+                    ]),
                 ),
                 // VGI123 classifying tags (bare keys: domain/category/topic) for faceting.
                 ("domain".to_string(), "color-science".to_string()),
@@ -116,11 +150,6 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 (
                     "topic".to_string(),
                     "color-spaces-and-accessibility".to_string(),
-                ),
-                (
-                    "vgi.source_url".to_string(),
-                    "https://github.com/Query-farm/vgi-color/blob/main/crates/color-worker/src/main.rs"
-                        .to_string(),
                 ),
                 (
                     "vgi.doc_llm".to_string(),
@@ -132,8 +161,16 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ),
                 (
                     "vgi.doc_md".to_string(),
-                    "Color-space conversion, CIEDE2000 color-difference and WCAG \
-                     contrast/accessibility functions over Apache Arrow."
+                    "# color.main\n\nColor-science functions over Apache Arrow. **Conversions** \
+                     move colors between sRGB hex, RGB, HSL and CIELAB (`to_hex`, `from_hex`, \
+                     `rgb_to_hsl`, `hsl_to_rgb`, `rgb_to_lab`). **Color difference** measures \
+                     perceptual distance with CIEDE2000 (`delta_e`) and maps a color to its \
+                     nearest CSS name (`nearest_color_name`). **Accessibility** computes WCAG \
+                     relative luminance and contrast ratio and classifies conformance \
+                     (`luminance`, `contrast_ratio`, `wcag_level`, `is_dark`). The \
+                     `named_colors` table lists every CSS named color with its hex value. Use \
+                     this schema for color conversion, palette analysis, and WCAG \
+                     contrast/accessibility checks directly in SQL."
                         .to_string(),
                 ),
                 // VGI506 representative example queries for the schema.
@@ -151,7 +188,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ],
             views: Vec::new(),
             macros: Vec::new(),
-            tables: Vec::new(),
+            tables: vec![table::named_colors_table()],
         }],
         ..Default::default()
     }
@@ -173,7 +210,9 @@ fn main() {
 
     let mut worker = Worker::new();
     scalar::register(&mut worker);
-    table::register(&mut worker);
+    // `named_colors` is registered as a function-backed catalog *table* inside
+    // `catalog_metadata` (via `CatTable::with_function`); `set_catalog` then
+    // auto-registers its scan, so no separate `table::register` is needed.
     worker.set_catalog(catalog_metadata(&catalog_name));
     worker.run();
 }
