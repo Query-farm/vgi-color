@@ -88,11 +88,46 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
             (
                 "vgi.doc_md".to_string(),
-                "# color\n\nColor science over Apache Arrow: color-space conversions, CIEDE2000 \
-                 (ΔE00) color difference, and WCAG contrast/accessibility.\n\nScalars: `to_hex`, \
-                 `from_hex`, `rgb_to_hsl`, `hsl_to_rgb`, `rgb_to_lab`, `delta_e`, `luminance`, \
-                 `contrast_ratio`, `wcag_level`, `is_dark`, `nearest_color_name`, \
-                 `color_version`. Table: `named_colors`."
+                "# Color Science for SQL\n\n\
+                 Bring professional color science to DuckDB — convert between color spaces, \
+                 measure perceptual color difference, and check accessibility contrast directly \
+                 in SQL, with no application code required.\n\n\
+                 The `color` extension is a [VGI](https://query.farm) worker that adds sRGB hex, \
+                 RGB, HSL and CIELAB color tools to DuckDB over Apache Arrow. It is built for \
+                 designers, data engineers, and accessibility teams who need to normalize colors, \
+                 build and de-duplicate palettes, compute \
+                 [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (ΔE00) \
+                 color differences, and audit \
+                 [WCAG](https://www.w3.org/TR/WCAG21/#contrast-minimum) contrast at warehouse \
+                 scale.\n\n\
+                 ## How it works\n\n\
+                 Every transform is implemented directly from the canonical specifications — \
+                 [sRGB / IEC 61966-2-1](https://en.wikipedia.org/wiki/SRGB) companding, the \
+                 [CIELAB (D65)](https://en.wikipedia.org/wiki/CIELAB_color_space) color space, \
+                 the Sharma–Wu–Dalal \
+                 [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) ΔE formula, \
+                 and the \
+                 [WCAG 2.x relative-luminance and contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) \
+                 definitions — so results match the standards exactly with zero external color \
+                 dependencies. The same algorithms are available in open-source libraries such as \
+                 the Rust [palette](https://github.com/Ogeon/palette) crate \
+                 ([docs](https://docs.rs/palette)); here they run inside a fast, dependency-free \
+                 worker. The 147 CSS named colors come from the \
+                 [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/#named-colors) \
+                 specification.\n\n\
+                 ## Functions and use cases\n\n\
+                 Conversion scalars move colors between representations: `to_hex`, `from_hex`, \
+                 `rgb_to_hsl`, `hsl_to_rgb`, and `rgb_to_lab`. Color-difference functions \
+                 `delta_e` (CIEDE2000 ΔE00) and `nearest_color_name` power palette de-duplication \
+                 and mapping arbitrary colors to the closest CSS name. Accessibility functions \
+                 `luminance`, `contrast_ratio`, `wcag_level` (AAA / AA / AA Large / fail) and \
+                 `is_dark` let you audit foreground/background pairs for WCAG conformance. The \
+                 `named_colors` table function lists every CSS named color with its hex value, and \
+                 `color_version` reports the worker version. Typical queries: \
+                 `SELECT to_hex(255, 99, 71)`, \
+                 `SELECT ROUND(contrast_ratio('#000000', '#ffffff'), 1)`, \
+                 `SELECT wcag_level('#595959', '#ffffff')`, and \
+                 `SELECT * FROM named_colors()`."
                     .to_string(),
             ),
             ("vgi.author".to_string(), "Query.Farm".to_string()),
