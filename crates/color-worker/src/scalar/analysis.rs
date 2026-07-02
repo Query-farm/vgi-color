@@ -63,6 +63,7 @@ impl ScalarFunction for DeltaE {
                     "dE00",
                     "similarity",
                 ],
+                "Color Difference",
             ),
             ..Default::default()
         }
@@ -139,6 +140,7 @@ impl ScalarFunction for Luminance {
                     "grayscale weight",
                     "accessibility",
                 ],
+                "Accessibility",
             ),
             ..Default::default()
         }
@@ -212,6 +214,7 @@ impl ScalarFunction for ContrastRatio {
                     "text contrast",
                     "ratio",
                 ],
+                "Accessibility",
             ),
             ..Default::default()
         }
@@ -296,6 +299,7 @@ impl ScalarFunction for WcagLevel {
                     "compliance",
                     "a11y",
                 ],
+                "Accessibility",
             ),
             ..Default::default()
         }
@@ -378,6 +382,7 @@ impl ScalarFunction for IsDark {
                     "foreground choice",
                     "brightness",
                 ],
+                "Accessibility",
             ),
             ..Default::default()
         }
@@ -449,6 +454,7 @@ impl ScalarFunction for NearestColorName {
                     "classify color",
                     "dE",
                 ],
+                "Color Difference",
             ),
             ..Default::default()
         }

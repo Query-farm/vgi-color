@@ -58,6 +58,7 @@ impl ScalarFunction for ToHex {
                     "encode color",
                     "sRGB",
                 ],
+                "Conversion",
             ),
             ..Default::default()
         }
@@ -146,6 +147,7 @@ impl ScalarFunction for FromHex {
                     "color parsing",
                     "sRGB",
                 ],
+                "Conversion",
             ),
             ..Default::default()
         }
@@ -237,6 +239,7 @@ impl ScalarFunction for RgbToHsl {
                     "saturation",
                     "lightness",
                 ],
+                "Conversion",
             ),
             ..Default::default()
         }
@@ -346,6 +349,7 @@ impl ScalarFunction for HslToRgb {
                     "RGB",
                     "from hsl",
                 ],
+                "Conversion",
             ),
             ..Default::default()
         }
@@ -441,6 +445,7 @@ impl ScalarFunction for RgbToLab {
                     "D65",
                     "color space conversion",
                 ],
+                "Conversion",
             ),
             ..Default::default()
         }

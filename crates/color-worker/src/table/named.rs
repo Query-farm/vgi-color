@@ -94,6 +94,7 @@ impl TableFunction for NamedColors {
                 "list colors",
                 "hex lookup",
             ],
+            "Reference",
         );
         tags.push((
             "vgi.result_columns_md".into(),

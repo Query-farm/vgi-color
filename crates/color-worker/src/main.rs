@@ -115,20 +115,25 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  worker. The 147 CSS named colors come from the \
                  [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/#named-colors) \
                  specification.\n\n\
-                 ## Functions and use cases\n\n\
-                 Conversion scalars move colors between representations: `to_hex`, `from_hex`, \
-                 `rgb_to_hsl`, `hsl_to_rgb`, and `rgb_to_lab`. Color-difference functions \
-                 `delta_e` (CIEDE2000 ΔE00) and `nearest_color_name` power palette de-duplication \
-                 and mapping arbitrary colors to the closest CSS name. Accessibility functions \
-                 `luminance`, `contrast_ratio`, `wcag_level` (AAA / AA / AA Large / fail) and \
-                 `is_dark` let you audit foreground/background pairs for WCAG conformance. The \
-                 `named_colors` table function lists every CSS named color with its hex value, and \
-                 `color_version` reports the worker version. Typical queries: \
-                 `SELECT to_hex(255, 99, 71)`, \
-                 `SELECT ROUND(contrast_ratio('#000000', '#ffffff'), 1)`, \
-                 `SELECT wcag_level('#595959', '#ffffff')`, and \
-                 `SELECT * FROM named_colors()`."
+                 ## Key concepts\n\n\
+                 Colors are represented as sRGB hex strings, integer RGB triples, HSL, or \
+                 perceptually-uniform CIELAB. Perceptual similarity is measured with CIEDE2000 \
+                 (ΔE00), where a value near 1 is roughly a just-noticeable difference. \
+                 Accessibility is expressed as WCAG relative luminance (0–1) and contrast ratio \
+                 (1–21), which classify into the WCAG conformance levels AAA, AA, AA Large and \
+                 fail.\n\n\
+                 ## When to use it\n\n\
+                 Reach for this worker whenever colors live in your data: normalizing \
+                 user-entered or imported hex values, building and de-duplicating palettes, \
+                 labeling arbitrary colors with their nearest name, or auditing \
+                 foreground/background pairs for accessibility. List the `main` schema to \
+                 discover the available functions, or browse them by category — conversion, \
+                 color difference, accessibility, and reference."
                     .to_string(),
+            ),
+            (
+                "vgi.agent_test_tasks".to_string(),
+                meta::AGENT_TEST_TASKS.to_string(),
             ),
             ("vgi.author".to_string(), "Query.Farm".to_string()),
             (
@@ -196,16 +201,32 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ),
                 (
                     "vgi.doc_md".to_string(),
-                    "# color.main\n\nColor-science functions over Apache Arrow. **Conversions** \
-                     move colors between sRGB hex, RGB, HSL and CIELAB (`to_hex`, `from_hex`, \
-                     `rgb_to_hsl`, `hsl_to_rgb`, `rgb_to_lab`). **Color difference** measures \
-                     perceptual distance with CIEDE2000 (`delta_e`) and maps a color to its \
-                     nearest CSS name (`nearest_color_name`). **Accessibility** computes WCAG \
-                     relative luminance and contrast ratio and classifies conformance \
-                     (`luminance`, `contrast_ratio`, `wcag_level`, `is_dark`). The \
-                     `named_colors` table lists every CSS named color with its hex value. Use \
-                     this schema for color conversion, palette analysis, and WCAG \
-                     contrast/accessibility checks directly in SQL."
+                    "# color.main\n\n\
+                     Color science over Apache Arrow. Everything the `color` worker exposes \
+                     lives in this single schema.\n\n\
+                     Three kinds of operation are available. **Conversions** move a color \
+                     between representations — sRGB hex, RGB, HSL and CIELAB. \
+                     **Color-difference** operations measure how far apart two colors look, \
+                     using the perceptual CIEDE2000 (ΔE00) metric, and can map an arbitrary \
+                     color to its nearest CSS name. **Accessibility** operations compute WCAG \
+                     relative luminance and contrast ratios and classify conformance for text \
+                     on a background.\n\n\
+                     Use this schema for color normalization, palette analysis and \
+                     de-duplication, and WCAG contrast/accessibility auditing directly in SQL. \
+                     List the schema to see the individual functions, or browse them by \
+                     category."
+                        .to_string(),
+                ),
+                // VGI413 category registry: an ordered list of navigation sections. Each
+                // function/table carries a matching `vgi.category` tag naming one of these.
+                (
+                    "vgi.categories".to_string(),
+                    r#"[
+  {"name": "Conversion", "description": "Convert colors between representations: sRGB hex, RGB, HSL and CIELAB."},
+  {"name": "Color Difference", "description": "Measure perceptual color difference with CIEDE2000 (ΔE00) and map colors to their nearest CSS name."},
+  {"name": "Accessibility", "description": "Compute WCAG relative luminance and contrast ratios and classify WCAG conformance levels."},
+  {"name": "Reference", "description": "Reference data and diagnostics: the CSS named-color catalog and the worker version."}
+]"#
                         .to_string(),
                 ),
                 // VGI506 representative example queries for the schema.

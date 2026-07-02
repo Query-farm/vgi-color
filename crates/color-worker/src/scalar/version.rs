@@ -39,6 +39,7 @@ impl ScalarFunction for ColorVersion {
                     "worker version",
                     "semver",
                 ],
+                "Reference",
             ),
             ..Default::default()
         }

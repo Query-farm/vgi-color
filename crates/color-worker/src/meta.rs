@@ -10,6 +10,48 @@
 //! Provenance (`vgi.source_url`, VGI139) lives only on the catalog object, never
 //! per-function — so it is intentionally not emitted here.
 
+/// Analyst task suite (VGI152) that `vgi-lint simulate` runs against the worker
+/// to measure how well an agent can actually discover and use these functions.
+/// Each task is a natural-language `prompt` plus a `reference_sql` answer keyed to
+/// the `color.main` functions; the harness scores the agent's query against it.
+pub const AGENT_TEST_TASKS: &str = r#"[
+  {
+    "name": "rgb_to_hex",
+    "prompt": "I have an sRGB color given as three 0-255 channels: red 255, green 99, blue 71. Using this worker, what is its lowercase '#rrggbb' hexadecimal color code? Return a single row with one column named hex.",
+    "reference_sql": "SELECT color.main.to_hex(255, 99, 71) AS hex"
+  },
+  {
+    "name": "hex_to_rgb_channels",
+    "prompt": "Using this worker, break the sRGB hex color '#ff6347' into its individual red, green, and blue channel values. Return one row with three integer columns named r, g, and b.",
+    "reference_sql": "SELECT (color.main.from_hex('#ff6347')).r AS r, (color.main.from_hex('#ff6347')).g AS g, (color.main.from_hex('#ff6347')).b AS b"
+  },
+  {
+    "name": "contrast_ratio",
+    "prompt": "Using this worker, compute the WCAG contrast ratio between the foreground color '#595959' and the background color '#ffffff', rounded to two decimal places. Return a single row with one column named ratio.",
+    "reference_sql": "SELECT ROUND(color.main.contrast_ratio('#595959', '#ffffff'), 2) AS ratio"
+  },
+  {
+    "name": "wcag_conformance_level",
+    "prompt": "Using this worker, classify the WCAG conformance level of text colored '#595959' on a '#ffffff' background. Return a single row with one column named level.",
+    "reference_sql": "SELECT color.main.wcag_level('#595959', '#ffffff') AS level"
+  },
+  {
+    "name": "perceptual_difference",
+    "prompt": "Using this worker's CIEDE2000 metric, how perceptually different are the two sRGB colors '#ff0000' and '#ee0000'? Round the result to four decimal places and return a single row with one column named delta_e.",
+    "reference_sql": "SELECT ROUND(color.main.delta_e('#ff0000', '#ee0000'), 4) AS delta_e"
+  },
+  {
+    "name": "nearest_named_color",
+    "prompt": "Using this worker, what is the closest CSS named color to the sRGB hex value '#ff6347'? Return a single row with one column named name.",
+    "reference_sql": "SELECT color.main.nearest_color_name('#ff6347') AS name"
+  },
+  {
+    "name": "list_named_colors",
+    "prompt": "Using this worker, list five CSS named colors in alphabetical order together with their hex values. Return exactly five rows with two columns named name and hex.",
+    "reference_sql": "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"
+  }
+]"#;
+
 /// Encode a list of keyword/synonym strings as a JSON array literal (VGI138),
 /// e.g. `["color","rgb to hex"]`. Each entry is escaped for `"` and `\`.
 pub fn keywords_json(keywords: &[&str]) -> String {
@@ -32,21 +74,24 @@ pub fn keywords_json(keywords: &[&str]) -> String {
     out
 }
 
-/// Build the four standard per-object discovery/description tags.
+/// Build the standard per-object discovery/description tags.
 ///
 /// `keywords` is a slice of search terms/synonyms, serialized to a JSON array
-/// (VGI138). Provenance is not emitted per-object (VGI139) — only the catalog
-/// carries `source_url`.
+/// (VGI138). `category` names one of the schema's `vgi.categories` (VGI413) so
+/// the object appears under the right navigation/listing section. Provenance is
+/// not emitted per-object (VGI139) — only the catalog carries `source_url`.
 pub fn object_tags(
     title: &str,
     description_llm: &str,
     description_md: &str,
     keywords: &[&str],
+    category: &str,
 ) -> Vec<(String, String)> {
     vec![
         ("vgi.title".to_string(), title.to_string()),
         ("vgi.doc_llm".to_string(), description_llm.to_string()),
         ("vgi.doc_md".to_string(), description_md.to_string()),
         ("vgi.keywords".to_string(), keywords_json(keywords)),
+        ("vgi.category".to_string(), category.to_string()),
     ]
 }

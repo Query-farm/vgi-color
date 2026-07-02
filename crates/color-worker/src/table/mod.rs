@@ -62,6 +62,8 @@ pub fn named_colors_table() -> CatTable {
         ("domain".to_string(), "color-science".to_string()),
         ("category".to_string(), "discovery".to_string()),
         ("topic".to_string(), "named-colors".to_string()),
+        // VGI411/VGI413: assign this table to one of the schema's `vgi.categories`.
+        ("vgi.category".to_string(), "Reference".to_string()),
         (
             "vgi.example_queries".to_string(),
             r#"[
