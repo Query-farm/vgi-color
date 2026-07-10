@@ -49,6 +49,36 @@ pub const AGENT_TEST_TASKS: &str = r#"[
     "name": "list_named_colors",
     "prompt": "Using this worker, list five CSS named colors in alphabetical order together with their hex values. Return exactly five rows with two columns named name and hex.",
     "reference_sql": "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"
+  },
+  {
+    "name": "rgb_to_hsl_lightness",
+    "prompt": "Using this worker, convert the sRGB color with red 0, green 128, blue 0 to the HSL color space and report its lightness component rounded to three decimal places. Return a single row with one column named l.",
+    "reference_sql": "SELECT ROUND((color.main.rgb_to_hsl(0, 128, 0)).l, 3) AS l"
+  },
+  {
+    "name": "hsl_to_rgb_green_channel",
+    "prompt": "Using this worker, convert the HSL color with hue 120 degrees, saturation 1.0 and lightness 0.5 into an sRGB triple and report its green channel. Return a single row with one integer column named g.",
+    "reference_sql": "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS g"
+  },
+  {
+    "name": "rgb_to_lab_lightness",
+    "prompt": "Using this worker, convert white (red 255, green 255, blue 255) to the CIELAB color space and report its L* lightness rounded to the nearest whole number. Return a single row with one column named l.",
+    "reference_sql": "SELECT ROUND((color.main.rgb_to_lab(255, 255, 255)).l) AS l"
+  },
+  {
+    "name": "luminance_threshold",
+    "prompt": "Using this worker, is the WCAG relative luminance of the color '#808080' greater than 0.2? Return a single row with one boolean column named is_bright.",
+    "reference_sql": "SELECT color.main.luminance('#808080') > 0.2 AS is_bright"
+  },
+  {
+    "name": "is_color_dark",
+    "prompt": "Using this worker, determine whether the color '#001f3f' is dark, so that light-colored text should be placed on top of it. Return a single row with one boolean column named dark.",
+    "reference_sql": "SELECT color.main.is_dark('#001f3f') AS dark"
+  },
+  {
+    "name": "worker_version",
+    "prompt": "Using this worker, report the version string of the running color worker. Return a single row with one column named version.",
+    "reference_sql": "SELECT color.main.color_version() AS version"
   }
 ]"#;
 

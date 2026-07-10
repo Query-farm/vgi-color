@@ -25,6 +25,21 @@ use crate::arrow_io::{
 };
 use crate::color::{self, Rgb};
 
+/// An 8-bit sRGB channel argument (`r`/`g`/`b`). The meaningful domain is the
+/// closed range 0..=255, declared as machine-readable `ge`/`le` constraints
+/// (VGI317) so agents discover valid inputs; values outside it are clamped into
+/// range rather than rejected.
+fn rgb_channel_arg(name: &str, position: i32, channel: &str) -> ArgSpec {
+    ArgSpec::column(
+        name,
+        position,
+        "int32",
+        &format!("{channel} channel intensity, 0 to 255 (values outside the range are clamped)"),
+    )
+    .with_ge(0.0)
+    .with_le(255.0)
+}
+
 /// `to_hex(r, g, b) -> VARCHAR`.
 pub struct ToHex;
 
@@ -66,24 +81,9 @@ impl ScalarFunction for ToHex {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::column(
-                "r",
-                0,
-                "int32",
-                "Red channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "g",
-                1,
-                "int32",
-                "Green channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "b",
-                2,
-                "int32",
-                "Blue channel, 0-255 (out-of-range values clamped)",
-            ),
+            rgb_channel_arg("r", 0, "Red"),
+            rgb_channel_arg("g", 1, "Green"),
+            rgb_channel_arg("b", 2, "Blue"),
         ]
     }
 
@@ -158,8 +158,13 @@ impl ScalarFunction for FromHex {
             "hex",
             0,
             "varchar",
-            "sRGB hex color to parse: '#rgb', '#rrggbb' or '#rrggbbaa' (alpha is dropped)",
-        )]
+            "sRGB hex color string: a leading '#' followed by 3, 6 or 8 hexadecimal digits \
+             (short '#rgb', full '#rrggbb', or '#rrggbbaa' with an alpha byte that is dropped)",
+        )
+        // VGI317: the accepted format is a closed shape, so declare it as a
+        // machine-readable regex rather than only prose. Anything not matching is
+        // treated as missing data and yields NULL.
+        .with_pattern(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
     }
 
     fn on_bind(&self, _params: &BindParams) -> Result<BindResponse> {
@@ -247,24 +252,9 @@ impl ScalarFunction for RgbToHsl {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::column(
-                "r",
-                0,
-                "int32",
-                "Red channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "g",
-                1,
-                "int32",
-                "Green channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "b",
-                2,
-                "int32",
-                "Blue channel, 0-255 (out-of-range values clamped)",
-            ),
+            rgb_channel_arg("r", 0, "Red"),
+            rgb_channel_arg("g", 1, "Green"),
+            rgb_channel_arg("b", 2, "Blue"),
         ]
     }
 
@@ -453,24 +443,9 @@ impl ScalarFunction for RgbToLab {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::column(
-                "r",
-                0,
-                "int32",
-                "Red channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "g",
-                1,
-                "int32",
-                "Green channel, 0-255 (out-of-range values clamped)",
-            ),
-            ArgSpec::column(
-                "b",
-                2,
-                "int32",
-                "Blue channel, 0-255 (out-of-range values clamped)",
-            ),
+            rgb_channel_arg("r", 0, "Red"),
+            rgb_channel_arg("g", 1, "Green"),
+            rgb_channel_arg("b", 2, "Blue"),
         ]
     }
 

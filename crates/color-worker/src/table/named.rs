@@ -96,13 +96,16 @@ impl TableFunction for NamedColors {
             ],
             "Reference",
         );
+        // VGI307/VGI321: the result schema is static, so declare it structurally
+        // (JSON array of {name, type, description}) rather than the retired
+        // free-form `vgi.result_columns_md` (VGI414).
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `name` | VARCHAR | The CSS color name, e.g. `tomato`, `rebeccapurple`. |\n\
-             | `hex` | VARCHAR | The color's `#rrggbb` sRGB hex value. |"
-                .into(),
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "name", "type": "VARCHAR", "description": "The CSS Color Module Level 4 color name, e.g. 'tomato' or 'rebeccapurple'."},
+  {"name": "hex", "type": "VARCHAR", "description": "The color's lowercase '#rrggbb' sRGB hex value."}
+]"#
+            .into(),
         ));
         tags.push(("vgi.executable_examples".into(), EXECUTABLE_EXAMPLES.into()));
         FunctionMetadata {
