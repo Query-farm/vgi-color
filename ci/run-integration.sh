@@ -105,7 +105,17 @@ case "$TRANSPORT" in
     # VGI_COLOR_WORKER (e.g. a bare command) if the caller set one.
     export VGI_COLOR_WORKER="${VGI_COLOR_WORKER:-$WORKER_BIN}"
     ;;
-  http)  start_server_and_set_location http ;;
+  http)
+    # Honor a pre-launched HTTP worker (e.g. a running container in the docker
+    # image_test): if VGI_COLOR_WORKER already points at an http(s) URL, use it
+    # and skip spawning a local binary. The awk preprocessor still injects
+    # httpfs because TRANSPORT=http.
+    if [[ "${VGI_COLOR_WORKER:-}" =~ ^https?:// ]]; then
+      echo "Using pre-launched HTTP worker at $VGI_COLOR_WORKER"
+    else
+      start_server_and_set_location http
+    fi
+    ;;
   unix)  start_server_and_set_location unix ;;
   *) echo "ERROR: unknown TRANSPORT '$TRANSPORT' (want subprocess|http|unix)" >&2; exit 1 ;;
 esac
