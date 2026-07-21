@@ -2,13 +2,11 @@
 
 mod analysis;
 mod convert;
-mod version;
 
 use vgi::Worker;
 
 /// Register every scalar function on the worker.
 pub fn register(worker: &mut Worker) {
-    worker.register_scalar(version::ColorVersion);
     worker.register_scalar(convert::ToHex);
     worker.register_scalar(convert::FromHex);
     worker.register_scalar(convert::RgbToHsl);

@@ -49,32 +49,38 @@ impl ScalarFunction for ToHex {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.to_hex(255, 99, 71);".into(),
+            description: "Format the RGB triple for 'tomato' as a '#rrggbb' hex string.".into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Format RGB as Hex",
+            "Format an RGB triple (each channel 0-255, out-of-range values clamped) as a \
+             lowercase '#rrggbb' sRGB hex color string. Returns NULL if any channel is NULL.",
+            "Format an RGB triple as a `#rrggbb` hex string, e.g. `to_hex(255, 99, 71)` → \
+             `#ff6347`.",
+            &[
+                "to_hex",
+                "rgb to hex",
+                "hex color",
+                "hex string",
+                "rrggbb",
+                "format color",
+                "encode color",
+                "sRGB",
+            ],
+            "Conversion",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "Format an RGB triple (0-255, clamped) as a '#rrggbb' hex string".into(),
             return_type: Some(DataType::Utf8),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.to_hex(255, 99, 71);".into(),
-                description: "Format the RGB triple for 'tomato' as a '#rrggbb' hex string.".into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Format RGB as Hex",
-                "Format an RGB triple (each channel 0-255, out-of-range values clamped) as a \
-                 lowercase '#rrggbb' sRGB hex color string. Returns NULL if any channel is NULL.",
-                "Format an RGB triple as a `#rrggbb` hex string, e.g. `to_hex(255, 99, 71)` → \
-                 `#ff6347`.",
-                &[
-                    "to_hex",
-                    "rgb to hex",
-                    "hex color",
-                    "hex string",
-                    "rrggbb",
-                    "format color",
-                    "encode color",
-                    "sRGB",
-                ],
-                "Conversion",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -120,35 +126,41 @@ impl ScalarFunction for FromHex {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT (color.main.from_hex('#ff6347')).r AS red;".into(),
+            description: "Parse a '#rrggbb' hex string into its red, green and blue channels."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Parse Hex to RGB",
+            "Parse an sRGB hex color string ('#rgb', '#rrggbb' or '#rrggbbaa') into a \
+             `STRUCT(r, g, b)` of 0-255 integer channels. Returns a NULL struct when the input \
+             is NULL or not a valid hex color (alpha is accepted but dropped).",
+            "Parse a hex color into a `STRUCT(r, g, b)`, e.g. `from_hex('#ff6347')` → \
+             `(255, 99, 71)`.",
+            &[
+                "from_hex",
+                "hex to rgb",
+                "parse hex",
+                "decode color",
+                "hex color",
+                "rrggbb",
+                "color parsing",
+                "sRGB",
+            ],
+            "Conversion",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
-            description: "Parse '#rgb' / '#rrggbb' / '#rrggbbaa' into STRUCT(r, g, b); NULL if \
+            description: "Parse '#rgb' / '#rrggbb' / '#rrggbbaa' into `STRUCT(r, g, b)`; NULL if \
                           the string is not a valid hex color"
                 .into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT (color.main.from_hex('#ff6347')).r AS red;".into(),
-                description: "Parse a '#rrggbb' hex string into its red, green and blue channels."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Parse Hex to RGB",
-                "Parse an sRGB hex color string ('#rgb', '#rrggbb' or '#rrggbbaa') into a \
-                 STRUCT(r, g, b) of 0-255 integer channels. Returns a NULL struct when the input \
-                 is NULL or not a valid hex color (alpha is accepted but dropped).",
-                "Parse a hex color into a `STRUCT(r, g, b)`, e.g. `from_hex('#ff6347')` → \
-                 `(255, 99, 71)`.",
-                &[
-                    "from_hex",
-                    "hex to rgb",
-                    "parse hex",
-                    "decode color",
-                    "hex color",
-                    "rrggbb",
-                    "color parsing",
-                    "sRGB",
-                ],
-                "Conversion",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -219,33 +231,39 @@ impl ScalarFunction for RgbToHsl {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;".into(),
+            description: "Convert pure red to its hue, saturation and lightness.".into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Convert RGB to HSL",
+            "Convert an RGB triple (each channel 0-255, clamped) to the HSL color space, \
+             returning `STRUCT(h, s, l)` where h is in [0,360) degrees and s, l are in [0,1]. \
+             Returns a NULL struct if any channel is NULL.",
+            "Convert RGB to HSL, e.g. `rgb_to_hsl(255, 0, 0)` → `(h := 0, s := 1, l := 0.5)`.",
+            &[
+                "rgb_to_hsl",
+                "rgb to hsl",
+                "hue saturation lightness",
+                "color space conversion",
+                "HSL",
+                "hue",
+                "saturation",
+                "lightness",
+            ],
+            "Conversion",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
-            description: "Convert an RGB triple (0-255) to HSL: STRUCT(h in [0,360), s in [0,1], \
-                          l in [0,1])"
+            description: "Convert an RGB triple (0-255) to HSL: `STRUCT(h, s, l)` with h in \
+                          [0,360), s in [0,1], l in [0,1]"
                 .into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;".into(),
-                description: "Convert pure red to its hue, saturation and lightness.".into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Convert RGB to HSL",
-                "Convert an RGB triple (each channel 0-255, clamped) to the HSL color space, \
-                 returning STRUCT(h in [0,360) degrees, s in [0,1], l in [0,1]). Returns a NULL \
-                 struct if any channel is NULL.",
-                "Convert RGB to HSL, e.g. `rgb_to_hsl(255, 0, 0)` → `(h := 0, s := 1, l := 0.5)`.",
-                &[
-                    "rgb_to_hsl",
-                    "rgb to hsl",
-                    "hue saturation lightness",
-                    "color space conversion",
-                    "HSL",
-                    "hue",
-                    "saturation",
-                    "lightness",
-                ],
-                "Conversion",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -314,33 +332,38 @@ impl ScalarFunction for HslToRgb {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;".into(),
+            description: "Convert fully-saturated green (hue 120°) back to an RGB triple.".into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Convert HSL to RGB",
+            "Convert an HSL color (h in degrees, s and l in [0,1]) back to an RGB triple, \
+             returning `STRUCT(r, g, b)` of 0-255 integer channels. Returns a NULL struct if \
+             any component is NULL.",
+            "Convert HSL to RGB, e.g. `hsl_to_rgb(120, 1.0, 0.5)` → `(r := 0, g := 255, \
+             b := 0)`.",
+            &[
+                "hsl_to_rgb",
+                "hsl to rgb",
+                "hue saturation lightness",
+                "color space conversion",
+                "RGB",
+                "from hsl",
+            ],
+            "Conversion",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "Convert HSL (h degrees, s/l in [0,1]) to an RGB triple: \
-                          STRUCT(r, g, b) in 0-255"
+                          `STRUCT(r, g, b)` in 0-255"
                 .into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;".into(),
-                description: "Convert fully-saturated green (hue 120°) back to an RGB triple."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Convert HSL to RGB",
-                "Convert an HSL color (h in degrees, s and l in [0,1]) back to an RGB triple, \
-                 returning STRUCT(r, g, b) of 0-255 integer channels. Returns a NULL struct if \
-                 any component is NULL.",
-                "Convert HSL to RGB, e.g. `hsl_to_rgb(120, 1.0, 0.5)` → `(r := 0, g := 255, \
-                 b := 0)`.",
-                &[
-                    "hsl_to_rgb",
-                    "hsl to rgb",
-                    "hue saturation lightness",
-                    "color space conversion",
-                    "RGB",
-                    "from hsl",
-                ],
-                "Conversion",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -410,33 +433,39 @@ impl ScalarFunction for RgbToLab {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;".into(),
+            description: "Convert white to CIELAB (D65) lightness L* and a*/b* chroma.".into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Convert RGB to CIELAB",
+            "Convert an RGB triple (0-255, clamped) to the perceptually-uniform CIELAB color \
+             space under the D65 reference white, returning `STRUCT(l, a, b)` where l is \
+             lightness (0-100) and a/b are the chroma axes. Returns a NULL struct if any \
+             channel is NULL.",
+            "Convert RGB to CIELAB (D65), e.g. `rgb_to_lab(255, 255, 255)` → `(l ≈ 100, \
+             a ≈ 0, b ≈ 0)`.",
+            &[
+                "rgb_to_lab",
+                "rgb to lab",
+                "CIELAB",
+                "Lab color",
+                "L*a*b*",
+                "perceptual color space",
+                "D65",
+                "color space conversion",
+            ],
+            "Conversion",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
-            description: "Convert an RGB triple (0-255) to CIELAB (D65): STRUCT(l, a, b)".into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;".into(),
-                description: "Convert white to CIELAB (D65) lightness L* and a*/b* chroma.".into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Convert RGB to CIELAB",
-                "Convert an RGB triple (0-255, clamped) to the perceptually-uniform CIELAB color \
-                 space under the D65 reference white, returning STRUCT(l, a, b) where l is \
-                 lightness (0-100) and a/b are the chroma axes. Returns a NULL struct if any \
-                 channel is NULL.",
-                "Convert RGB to CIELAB (D65), e.g. `rgb_to_lab(255, 255, 255)` → `(l ≈ 100, \
-                 a ≈ 0, b ≈ 0)`.",
-                &[
-                    "rgb_to_lab",
-                    "rgb to lab",
-                    "CIELAB",
-                    "Lab color",
-                    "L*a*b*",
-                    "perceptual color space",
-                    "D65",
-                    "color space conversion",
-                ],
-                "Conversion",
-            ),
+            description: "Convert an RGB triple (0-255) to CIELAB (D65): `STRUCT(l, a, b)`".into(),
+            examples,
+            tags,
             ..Default::default()
         }
     }

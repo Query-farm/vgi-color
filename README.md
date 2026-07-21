@@ -70,7 +70,9 @@ Scalars (positional-only):
 | `wcag_level` | `wcag_level(hex_fg, hex_bg) -> VARCHAR` | `'AAA'`/`'AA'`/`'AA Large'`/`'fail'` (normal text) |
 | `is_dark` | `is_dark(hex) -> BOOLEAN` | luminance `< 0.5` |
 | `nearest_color_name` | `nearest_color_name(hex) -> VARCHAR` | Closest CSS named color by ΔE |
-| `color_version` | `color_version() -> VARCHAR` | Worker version |
+
+The worker's build version is published as the catalog's `implementation_version`
+(readable via `vgi_catalogs()`), so there is no separate `version()` scalar.
 
 Table function:
 

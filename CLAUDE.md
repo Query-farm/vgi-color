@@ -95,5 +95,7 @@ CI (`.github/workflows/ci.yml`) runs fmt/clippy/build/test plus a gated
 
 Scalars: `to_hex` (VARCHAR), `from_hex` (STRUCT r/g/b), `rgb_to_hsl`,
 `hsl_to_rgb`, `rgb_to_lab` (STRUCTs), `delta_e`/`luminance`/`contrast_ratio`
-(DOUBLE), `wcag_level`/`nearest_color_name` (VARCHAR), `is_dark` (BOOLEAN),
-`color_version` (VARCHAR). Table: `named_colors` (name/hex). 147 CSS named colors.
+(DOUBLE), `wcag_level`/`nearest_color_name` (VARCHAR), `is_dark` (BOOLEAN).
+Table: `named_colors` (name/hex). 147 CSS named colors. The worker's build
+version is exposed as the catalog `implementation_version` (via `vgi_catalogs()`),
+not a parameterless `version()` scalar (VGI328).

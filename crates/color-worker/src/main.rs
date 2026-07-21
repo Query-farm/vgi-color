@@ -30,7 +30,7 @@ mod table;
 use vgi::catalog::{CatSchema, CatalogModel};
 use vgi::Worker;
 
-/// Worker version string, surfaced by `color_version()`.
+/// Worker version string, published as the catalog's `implementation_version`.
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
@@ -126,9 +126,8 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  Reach for this worker whenever colors live in your data: normalizing \
                  user-entered or imported hex values, building and de-duplicating palettes, \
                  labeling arbitrary colors with their nearest name, or auditing \
-                 foreground/background pairs for accessibility. List the `main` schema to \
-                 discover the available functions, or browse them by category — conversion, \
-                 color difference, accessibility, and reference."
+                 foreground/background pairs for accessibility. Its functions are organized into \
+                 four categories — conversion, color difference, accessibility, and reference."
                     .to_string(),
             ),
             (
@@ -151,6 +150,10 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
         ],
         source_url: Some("https://github.com/Query-farm/vgi-color".to_string()),
+        // The running binary's semantic version. An agent reads this straight from
+        // `vgi_catalogs()` (VGI328), so no parameterless `version()` scalar is
+        // needed — and it can never drift from the build that emitted it.
+        implementation_version: Some(version().to_string()),
         schemas: vec![CatSchema {
             name: "main".to_string(),
             comment: Some(
@@ -213,8 +216,8 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                      on a background.\n\n\
                      Use this schema for color normalization, palette analysis and \
                      de-duplication, and WCAG contrast/accessibility auditing directly in SQL. \
-                     List the schema to see the individual functions, or browse them by \
-                     category."
+                     The functions are grouped into four categories: conversion, color \
+                     difference, accessibility, and reference."
                         .to_string(),
                 ),
                 // VGI413 category registry: an ordered list of navigation sections. Each
@@ -225,20 +228,23 @@ fn catalog_metadata(name: &str) -> CatalogModel {
   {"name": "Conversion", "description": "Convert colors between representations: sRGB hex, RGB, HSL and CIELAB."},
   {"name": "Color Difference", "description": "Measure perceptual color difference with CIEDE2000 (ΔE00) and map colors to their nearest CSS name."},
   {"name": "Accessibility", "description": "Compute WCAG relative luminance and contrast ratios and classify WCAG conformance levels."},
-  {"name": "Reference", "description": "Reference data and diagnostics: the CSS named-color catalog and the worker version."}
+  {"name": "Reference", "description": "Reference data: the CSS named-color catalog."}
 ]"#
                         .to_string(),
                 ),
-                // VGI506 representative example queries for the schema.
+                // VGI506/VGI515 representative example queries for the schema, as a
+                // JSON list of {description, sql} so every example is described.
                 (
                     "vgi.example_queries".to_string(),
-                    "SELECT color.main.to_hex(255, 99, 71);\n\
-                     SELECT (color.main.from_hex('#ff6347')).r AS red;\n\
-                     SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;\n\
-                     SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);\n\
-                     SELECT color.main.wcag_level('#595959', '#ffffff');\n\
-                     SELECT color.main.nearest_color_name('#ff6347');\n\
-                     SELECT * FROM color.main.named_colors() ORDER BY name LIMIT 5;"
+                    r#"[
+  {"description": "Format an RGB triple as a '#rrggbb' hex string.", "sql": "SELECT color.main.to_hex(255, 99, 71)"},
+  {"description": "Parse a hex color into its red channel.", "sql": "SELECT (color.main.from_hex('#ff6347')).r AS red"},
+  {"description": "Convert pure red to its HSL hue.", "sql": "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue"},
+  {"description": "Compute the WCAG contrast ratio between black and white.", "sql": "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1) AS ratio"},
+  {"description": "Classify the WCAG conformance level of dark-grey text on white.", "sql": "SELECT color.main.wcag_level('#595959', '#ffffff') AS level"},
+  {"description": "Find the closest CSS named color to a hex value.", "sql": "SELECT color.main.nearest_color_name('#ff6347') AS name"},
+  {"description": "List a few CSS named colors with their hex values.", "sql": "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"}
+]"#
                         .to_string(),
                 ),
             ],

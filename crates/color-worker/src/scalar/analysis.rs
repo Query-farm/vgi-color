@@ -32,39 +32,45 @@ impl ScalarFunction for DeltaE {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.delta_e('#ff0000', '#ee0000');".into(),
+            description: "Measure the perceptual CIEDE2000 (ΔE00) difference between two \
+                          near-identical reds."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "CIEDE2000 Color Difference",
+            "Compute the CIEDE2000 (ΔE00) perceptual color difference between two sRGB hex \
+             colors. Small values mean the colors are perceptually close; a ΔE00 near 1 is \
+             roughly the just-noticeable difference. Returns NULL if either input is not a \
+             valid hex color.",
+            "CIEDE2000 (ΔE00) difference between two hex colors, e.g. \
+             `delta_e('#ff0000', '#ee0000')`.",
+            &[
+                "delta_e",
+                "delta e",
+                "deltaE",
+                "CIEDE2000",
+                "color difference",
+                "perceptual difference",
+                "color distance",
+                "dE00",
+                "similarity",
+            ],
+            "Color Difference",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "CIEDE2000 (ΔE00) color difference between two hex colors; NULL if \
                           either is not a valid hex color"
                 .into(),
             return_type: Some(DataType::Float64),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.delta_e('#ff0000', '#ee0000');".into(),
-                description: "Measure the perceptual CIEDE2000 (ΔE00) difference between two \
-                              near-identical reds."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "CIEDE2000 Color Difference",
-                "Compute the CIEDE2000 (ΔE00) perceptual color difference between two sRGB hex \
-                 colors. Small values mean the colors are perceptually close; a ΔE00 near 1 is \
-                 roughly the just-noticeable difference. Returns NULL if either input is not a \
-                 valid hex color.",
-                "CIEDE2000 (ΔE00) difference between two hex colors, e.g. \
-                 `delta_e('#ff0000', '#ee0000')`.",
-                &[
-                    "delta_e",
-                    "delta e",
-                    "deltaE",
-                    "CIEDE2000",
-                    "color difference",
-                    "perceptual difference",
-                    "color distance",
-                    "dE00",
-                    "similarity",
-                ],
-                "Color Difference",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -117,31 +123,37 @@ impl ScalarFunction for Luminance {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.luminance('#808080');".into(),
+            description: "Compute the WCAG relative luminance of mid-grey.".into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "WCAG Relative Luminance",
+            "Compute the WCAG 2.x relative luminance (0 for black, 1 for white) of an sRGB hex \
+             color by linearizing each channel and weighting them 0.2126 R + 0.7152 G + \
+             0.0722 B. Returns NULL if the input is not a valid hex color.",
+            "WCAG relative luminance (0..1) of a hex color, e.g. `luminance('#808080')`.",
+            &[
+                "luminance",
+                "relative luminance",
+                "WCAG",
+                "brightness",
+                "perceived brightness",
+                "grayscale weight",
+                "accessibility",
+            ],
+            "Accessibility",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "WCAG relative luminance (0..1) of a hex color; NULL if invalid".into(),
             return_type: Some(DataType::Float64),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.luminance('#808080');".into(),
-                description: "Compute the WCAG relative luminance of mid-grey.".into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "WCAG Relative Luminance",
-                "Compute the WCAG 2.x relative luminance (0 for black, 1 for white) of an sRGB hex \
-                 color by linearizing each channel and weighting them 0.2126 R + 0.7152 G + \
-                 0.0722 B. Returns NULL if the input is not a valid hex color.",
-                "WCAG relative luminance (0..1) of a hex color, e.g. `luminance('#808080')`.",
-                &[
-                    "luminance",
-                    "relative luminance",
-                    "WCAG",
-                    "brightness",
-                    "perceived brightness",
-                    "grayscale weight",
-                    "accessibility",
-                ],
-                "Accessibility",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -184,38 +196,44 @@ impl ScalarFunction for ContrastRatio {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);".into(),
+            description: "Compute the WCAG contrast ratio between black and white (21.0, the \
+                          maximum)."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "WCAG Contrast Ratio",
+            "Compute the WCAG 2.x contrast ratio between two sRGB hex colors, from 1.0 (no \
+             contrast) to 21.0 (black on white). The order of arguments does not matter. Use \
+             it to check text legibility and accessibility. Returns NULL if either input is \
+             not a valid hex color.",
+            "WCAG contrast ratio (1..21) between two hex colors, e.g. \
+             `contrast_ratio('#000000', '#ffffff')` → 21.",
+            &[
+                "contrast_ratio",
+                "contrast",
+                "WCAG",
+                "accessibility",
+                "legibility",
+                "readability",
+                "text contrast",
+                "ratio",
+            ],
+            "Accessibility",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "WCAG contrast ratio (1..21) between two hex colors; NULL if either is \
                           invalid"
                 .into(),
             return_type: Some(DataType::Float64),
-            examples: vec![FunctionExample {
-                sql: "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);".into(),
-                description: "Compute the WCAG contrast ratio between black and white (21.0, the \
-                              maximum)."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "WCAG Contrast Ratio",
-                "Compute the WCAG 2.x contrast ratio between two sRGB hex colors, from 1.0 (no \
-                 contrast) to 21.0 (black on white). The order of arguments does not matter. Use \
-                 it to check text legibility and accessibility. Returns NULL if either input is \
-                 not a valid hex color.",
-                "WCAG contrast ratio (1..21) between two hex colors, e.g. \
-                 `contrast_ratio('#000000', '#ffffff')` → 21.",
-                &[
-                    "contrast_ratio",
-                    "contrast",
-                    "WCAG",
-                    "accessibility",
-                    "legibility",
-                    "readability",
-                    "text contrast",
-                    "ratio",
-                ],
-                "Accessibility",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -268,39 +286,45 @@ impl ScalarFunction for WcagLevel {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.wcag_level('#595959', '#ffffff');".into(),
+            description: "Classify the WCAG conformance level of dark-grey text on a white \
+                          background."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "WCAG Conformance Level",
+            "Classify the WCAG 2.x conformance level for normal-size text given a foreground \
+             and background sRGB hex color, returning 'AAA' (>=7:1), 'AA' (>=4.5:1), \
+             'AA Large' (>=3:1) or 'fail'. Returns NULL if either input is not a valid hex \
+             color.",
+            "WCAG conformance level for text on a background, e.g. \
+             `wcag_level('#595959', '#ffffff')`.",
+            &[
+                "wcag_level",
+                "WCAG",
+                "conformance",
+                "AA",
+                "AAA",
+                "accessibility",
+                "contrast level",
+                "compliance",
+                "a11y",
+            ],
+            "Accessibility",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "WCAG conformance level for normal text ('AAA'|'AA'|'AA Large'|'fail') \
                           given foreground/background hex colors; NULL if either is invalid"
                 .into(),
             return_type: Some(DataType::Utf8),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.wcag_level('#595959', '#ffffff');".into(),
-                description: "Classify the WCAG conformance level of dark-grey text on a white \
-                              background."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "WCAG Conformance Level",
-                "Classify the WCAG 2.x conformance level for normal-size text given a foreground \
-                 and background sRGB hex color, returning 'AAA' (>=7:1), 'AA' (>=4.5:1), \
-                 'AA Large' (>=3:1) or 'fail'. Returns NULL if either input is not a valid hex \
-                 color.",
-                "WCAG conformance level for text on a background, e.g. \
-                 `wcag_level('#595959', '#ffffff')`.",
-                &[
-                    "wcag_level",
-                    "WCAG",
-                    "conformance",
-                    "AA",
-                    "AAA",
-                    "accessibility",
-                    "contrast level",
-                    "compliance",
-                    "a11y",
-                ],
-                "Accessibility",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -355,35 +379,40 @@ impl ScalarFunction for IsDark {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.is_dark('#001f3f');".into(),
+            description: "Test whether a navy background is dark (so light text should be used)."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Detect Dark Color",
+            "Return TRUE when an sRGB hex color's WCAG relative luminance is below 0.5, i.e. \
+             the color is dark enough that light foreground text reads better on it. Returns \
+             NULL if the input is not a valid hex color.",
+            "True if a hex color is dark (luminance < 0.5), e.g. `is_dark('#001f3f')`.",
+            &[
+                "is_dark",
+                "dark color",
+                "light or dark",
+                "luminance threshold",
+                "theme",
+                "foreground choice",
+                "brightness",
+            ],
+            "Accessibility",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "True if a hex color's WCAG relative luminance is below 0.5; NULL if \
                           invalid"
                 .into(),
             return_type: Some(DataType::Boolean),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.is_dark('#001f3f');".into(),
-                description: "Test whether a navy background is dark (so light text should be \
-                              used)."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Detect Dark Color",
-                "Return TRUE when an sRGB hex color's WCAG relative luminance is below 0.5, i.e. \
-                 the color is dark enough that light foreground text reads better on it. Returns \
-                 NULL if the input is not a valid hex color.",
-                "True if a hex color is dark (luminance < 0.5), e.g. `is_dark('#001f3f')`.",
-                &[
-                    "is_dark",
-                    "dark color",
-                    "light or dark",
-                    "luminance threshold",
-                    "theme",
-                    "foreground choice",
-                    "brightness",
-                ],
-                "Accessibility",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
@@ -426,36 +455,41 @@ impl ScalarFunction for NearestColorName {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let examples = vec![FunctionExample {
+            sql: "SELECT color.main.nearest_color_name('#ff6347');".into(),
+            description: "Find the closest CSS named color to a given hex value (by CIEDE2000 ΔE)."
+                .into(),
+            expected_output: None,
+        }];
+        let mut tags = crate::meta::object_tags(
+            "Nearest Named Color",
+            "Return the name of the CSS named color closest to a given sRGB hex color, measured \
+             by CIEDE2000 (ΔE00) perceptual distance (ties resolve to the first match in CSS \
+             table order). Returns NULL if the input is not a valid hex color.",
+            "Closest CSS named color to a hex value, e.g. `nearest_color_name('#ff6347')` → \
+             'tomato'.",
+            &[
+                "nearest_color_name",
+                "named color",
+                "closest color",
+                "color name",
+                "CSS color",
+                "label color",
+                "classify color",
+                "dE",
+            ],
+            "Color Difference",
+        );
+        tags.push((
+            "vgi.example_queries".into(),
+            crate::meta::example_queries_json(&examples),
+        ));
         FunctionMetadata {
             description: "Closest CSS named color to a hex color, by CIEDE2000 ΔE; NULL if invalid"
                 .into(),
             return_type: Some(DataType::Utf8),
-            examples: vec![FunctionExample {
-                sql: "SELECT color.main.nearest_color_name('#ff6347');".into(),
-                description: "Find the closest CSS named color to a given hex value (by CIEDE2000 \
-                              ΔE)."
-                    .into(),
-                expected_output: None,
-            }],
-            tags: crate::meta::object_tags(
-                "Nearest Named Color",
-                "Return the name of the CSS named color closest to a given sRGB hex color, measured \
-                 by CIEDE2000 (ΔE00) perceptual distance (ties resolve to the first match in CSS \
-                 table order). Returns NULL if the input is not a valid hex color.",
-                "Closest CSS named color to a hex value, e.g. `nearest_color_name('#ff6347')` → \
-                 'tomato'.",
-                &[
-                    "nearest_color_name",
-                    "named color",
-                    "closest color",
-                    "color name",
-                    "CSS color",
-                    "label color",
-                    "classify color",
-                    "dE",
-                ],
-                "Color Difference",
-            ),
+            examples,
+            tags,
             ..Default::default()
         }
     }
