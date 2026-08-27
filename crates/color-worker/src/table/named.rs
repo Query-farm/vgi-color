@@ -158,4 +158,8 @@ impl TableProducer for NamedProducer {
                 .map_err(|e| RpcError::runtime_error(e.to_string()))?,
         ))
     }
+
+    fn resume_supported(&self) -> bool {
+        false
+    }
 }
