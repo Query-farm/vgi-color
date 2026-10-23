@@ -1,0 +1,32 @@
+# Private graders for the agent-suitability suite (`vgi-lint simulate`).
+#
+# The prompts are published in the catalog's vgi.agent_test_tasks tag
+# (crates/color-worker/src/meta.rs); the answers live here, keyed by task name,
+# so the agent being graded never sees them. vgi-lint discovers this file in
+# the directory it runs from.
+
+tasks:
+  - name: "rgb_to_hex"
+    reference_sql: "SELECT color.main.to_hex(255, 99, 71) AS hex"
+  - name: "hex_to_rgb_channels"
+    reference_sql: "SELECT (color.main.from_hex('#ff6347')).r AS r, (color.main.from_hex('#ff6347')).g AS g, (color.main.from_hex('#ff6347')).b AS b"
+  - name: "contrast_ratio"
+    reference_sql: "SELECT ROUND(color.main.contrast_ratio('#595959', '#ffffff'), 2) AS ratio"
+  - name: "wcag_conformance_level"
+    reference_sql: "SELECT color.main.wcag_level('#595959', '#ffffff') AS level"
+  - name: "perceptual_difference"
+    reference_sql: "SELECT ROUND(color.main.delta_e('#ff0000', '#ee0000'), 4) AS delta_e"
+  - name: "nearest_named_color"
+    reference_sql: "SELECT color.main.nearest_color_name('#ff6347') AS name"
+  - name: "list_named_colors"
+    reference_sql: "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"
+  - name: "rgb_to_hsl_lightness"
+    reference_sql: "SELECT ROUND((color.main.rgb_to_hsl(0, 128, 0)).l, 3) AS l"
+  - name: "hsl_to_rgb_green_channel"
+    reference_sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS g"
+  - name: "rgb_to_lab_lightness"
+    reference_sql: "SELECT ROUND((color.main.rgb_to_lab(255, 255, 255)).l) AS l"
+  - name: "luminance_threshold"
+    reference_sql: "SELECT color.main.luminance('#808080') > 0.2 AS is_bright"
+  - name: "is_color_dark"
+    reference_sql: "SELECT color.main.is_dark('#001f3f') AS dark"
