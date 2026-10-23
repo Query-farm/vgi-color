@@ -161,6 +161,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
         implementation_version: Some(version().to_string()),
         schemas: vec![CatSchema {
             name: "main".to_string(),
+            path: Vec::new(),
             comment: Some(
                 "Color-space conversion, color-difference (CIEDE2000) and WCAG contrast functions."
                     .to_string(),
