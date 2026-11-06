@@ -5,6 +5,7 @@ mod named;
 use std::sync::Arc;
 
 use vgi::catalog::CatTable;
+use vgi::constraints::{constraint_record, ConstraintKind, ConstraintRecord};
 
 /// Build the catalog `CatTable` that exposes `named_colors` as a regular table
 /// (`SELECT * FROM color.main.named_colors`, no parentheses — VGI311), backed by
@@ -23,11 +24,30 @@ pub fn named_colors_table() -> CatTable {
         Some("Every CSS named color paired with its '#rrggbb' sRGB hex value.".to_string()),
         Some(crate::color::NAMED_COLORS.len() as i64),
     );
-    // `name` (column 0) is the unique row identity — declare it the primary key
-    // (VGI807) and the table's NOT NULL/unique constraints (VGI806).
-    t.primary_key = vec![vec![0]];
-    t.not_null = vec![0, 1];
-    t.unique = vec![vec![0]];
+    // `name` is the unique row identity — declare it the primary key (VGI807)
+    // and the table's NOT NULL/unique constraints (VGI806). Under vgi.v3 these
+    // travel as canonical ENFORCED + ALL_ROWS constraint records; the SDK serves
+    // exactly the named columns as non-nullable and negotiates the read profile.
+    t.constraints = [
+        ("named_colors.pk", ConstraintKind::PrimaryKey, "name"),
+        (
+            "named_colors.name.not_null",
+            ConstraintKind::NotNull,
+            "name",
+        ),
+        ("named_colors.hex.not_null", ConstraintKind::NotNull, "hex"),
+        ("named_colors.name.unique", ConstraintKind::Unique, "name"),
+    ]
+    .into_iter()
+    .map(|(id, kind, column)| {
+        constraint_record(
+            &ConstraintRecord::new(&["main"], "named_colors", id, kind)
+                .with_columns(&[&[column]])
+                .enforced(),
+        )
+        .expect("valid named_colors constraint record")
+    })
+    .collect();
     t.tags =
         vec![
         ("vgi.title".to_string(), "CSS Named Colors Catalog".to_string()),

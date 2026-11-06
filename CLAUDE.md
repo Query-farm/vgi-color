@@ -19,7 +19,7 @@ full MSRV control (workspace `rust-version = 1.97`).
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.46", arrow 60
+Cargo.toml                          workspace; pins vgi = "0.49.2", arrow 59.2 (vgi.v3 / haybarn 2.0)
 crates/color-worker/
   src/main.rs                       Worker::new(); registers scalars + table
   src/lib.rs                        lib target re-exporting `color` for integration tests

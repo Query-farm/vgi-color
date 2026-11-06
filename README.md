@@ -97,7 +97,9 @@ make fmt        # rustfmt the workspace
 ```
 
 The SQL E2E suite uses [`haybarn-unittest`](https://query.farm)
-(`uv tool install haybarn-unittest`).
+2.0 (`uv tool install --prerelease allow "haybarn-unittest>=2.0.0rc11,<2.1"`).
+The worker speaks VGI protocol vgi.v3 (3.1), so it requires haybarn 2.0 and its
+community `vgi` extension; haybarn 1.5 cannot attach it.
 
 ## License
 
