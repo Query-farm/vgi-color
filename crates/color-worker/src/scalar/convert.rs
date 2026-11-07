@@ -161,6 +161,7 @@ impl ScalarFunction for FromHex {
                 .into(),
             examples,
             tags,
+            return_type: Some(DataType::Struct(rgb_struct_fields())),
             ..Default::default()
         }
     }
@@ -264,6 +265,7 @@ impl ScalarFunction for RgbToHsl {
                 .into(),
             examples,
             tags,
+            return_type: Some(DataType::Struct(hsl_struct_fields())),
             ..Default::default()
         }
     }
@@ -364,6 +366,7 @@ impl ScalarFunction for HslToRgb {
                 .into(),
             examples,
             tags,
+            return_type: Some(DataType::Struct(rgb_struct_fields())),
             ..Default::default()
         }
     }
@@ -466,6 +469,7 @@ impl ScalarFunction for RgbToLab {
             description: "Convert an RGB triple (0-255) to CIELAB (D65): `STRUCT(l, a, b)`".into(),
             examples,
             tags,
+            return_type: Some(DataType::Struct(lab_struct_fields())),
             ..Default::default()
         }
     }
