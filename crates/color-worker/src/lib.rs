@@ -58,6 +58,12 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 "Color Science & Accessibility".to_string(),
             ),
             (
+                "vgi.subtitle".to_string(),
+                "Convert colors between hex, RGB, HSL and CIELAB, measure CIEDE2000 \
+                 difference, and check WCAG contrast for accessibility."
+                    .to_string(),
+            ),
+            (
                 "vgi.keywords".to_string(),
                 meta::keywords_json(&[
                     "color",
@@ -167,7 +173,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             tags: vec![
-                ("vgi.title".to_string(), "Color — main".to_string()),
+                ("vgi.title".to_string(), "Color functions".to_string()),
                 (
                     "vgi.keywords".to_string(),
                     meta::keywords_json(&[
