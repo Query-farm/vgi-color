@@ -14,7 +14,7 @@ DuckDB over Apache Arrow.
 
 ```sql
 LOAD vgi;
-ATTACH 'color' (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-color@v0.2.0');
+ATTACH 'color' (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-color@v0.3.0');
 SET search_path = 'color.main';
 
 SELECT to_hex(255, 0, 0);                       -- '#ff0000'
@@ -37,7 +37,7 @@ Every [GitHub release](https://github.com/Query-farm/vgi-color/releases) ships a
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'color' AS color (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-color@v0.2.0');
+ATTACH 'color' AS color (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-color@v0.3.0');
 
 -- Format an RGB triple as a '#rrggbb' hex string.
 SELECT color.main.to_hex(255, 99, 71);
@@ -46,14 +46,14 @@ SELECT color.main.to_hex(255, 99, 71);
 SELECT (color.main.from_hex('#ff6347')).r AS red;
 ```
 
-Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.2.0` to move to a newer release.
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.3.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker; needs a container runtime):
 
   ```sql
-  ATTACH 'color' AS color (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-color:0.2.0');
+  ATTACH 'color' AS color (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-color:0.3.0');
   ```
 
 - **Manual download.** Download the archive for your platform from the [releases page](https://github.com/Query-farm/vgi-color/releases), verify it against its `.sha256` file (a cosign `.cosign.bundle` is published alongside), unpack it, and set `LOCATION` to the path of the extracted worker executable.
