@@ -24,6 +24,10 @@ pub fn named_colors_table() -> CatTable {
         Some("Every CSS named color paired with its '#rrggbb' sRGB hex value.".to_string()),
         Some(crate::color::NAMED_COLORS.len() as i64),
     );
+    // Protocol 3.3: a table-embedded scan is `table_only` (hidden from
+    // duckdb_functions(), not callable from SQL) unless exposed. Keep the
+    // documented `named_colors()` table-function form callable too.
+    t.expose_scan = true;
     // `name` is the unique row identity — declare it the primary key (VGI807)
     // and the table's NOT NULL/unique constraints (VGI806). Under vgi.v3 these
     // travel as canonical ENFORCED + ALL_ROWS constraint records; the SDK serves
