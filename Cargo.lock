@@ -488,7 +488,7 @@ dependencies = [
 
 [[package]]
 name = "color-wasm"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "color-worker",
  "vgi",
@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "color-worker"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "arrow-array",
  "arrow-buffer",
