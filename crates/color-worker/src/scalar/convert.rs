@@ -400,10 +400,12 @@ impl ScalarFunction for HslToRgb {
         let mut bb = Int32Builder::new();
         let mut valid: Vec<bool> = Vec::with_capacity(rows);
         for i in 0..rows {
-            let hsl = (double_val(h, i)?, double_val(s, i)?, double_val(l, i)?);
-            match hsl {
-                (Some(h), Some(s), Some(l)) if color::hsl_to_rgb_checked(h, s, l).is_some() => {
-                    let rgb = color::hsl_to_rgb(h, s, l);
+            let rgb = match (double_val(h, i)?, double_val(s, i)?, double_val(l, i)?) {
+                (Some(h), Some(s), Some(l)) => color::hsl_to_rgb_checked(h, s, l),
+                _ => None,
+            };
+            match rgb {
+                Some(rgb) => {
                     rb.append_value(rgb.r as i32);
                     gb.append_value(rgb.g as i32);
                     bb.append_value(rgb.b as i32);
