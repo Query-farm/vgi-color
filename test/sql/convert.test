@@ -11,7 +11,7 @@ statement ok
 LOAD vgi;
 
 statement ok
-ATTACH 'color' AS color (TYPE vgi, LOCATION '${VGI_COLOR_WORKER}');
+ATTACH 'color' AS color (TYPE vgi, LOCATION '{VGI_COLOR_WORKER}');
 
 statement ok
 SET search_path = 'color.main';
@@ -80,6 +80,12 @@ query T
 SELECT to_hex(NULL, 0, 0);
 ----
 NULL
+
+# Non-finite HSL components have no meaningful color: NULL, not a bogus red.
+query TTT
+SELECT hsl_to_rgb('nan'::DOUBLE, 1, 0.5) IS NULL, hsl_to_rgb(0, 'nan'::DOUBLE, 0.5) IS NULL, hsl_to_rgb('inf'::DOUBLE, 1, 0.5) IS NULL;
+----
+true	true	true
 
 statement ok
 USE memory;

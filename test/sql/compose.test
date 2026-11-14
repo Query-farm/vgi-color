@@ -1,0 +1,113 @@
+# name: test/sql/compose.test
+# group: [vgi_color]
+#
+# Composed examples: every query in crates/color-worker/src/examples.rs (published
+# in the schema-level vgi.example_queries and on its driving object). The
+# examples.rs unit test fails if any SQL here drifts from its constant, so these
+# pinned outputs are the outputs the published examples produce.
+
+require-env VGI_COLOR_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'color' AS color (TYPE vgi, LOCATION '{VGI_COLOR_WORKER}');
+
+# Accessible shade finder: from_hex -> rgb_to_hsl -> hsl_to_rgb -> to_hex, graded by contrast_ratio + wcag_level.
+query RTRT
+WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), shades AS (SELECT t.k / 100 AS lightness, color.main.hsl_to_rgb(base.hsl.h, base.hsl.s, t.k / 100) AS rgb FROM base, range(30, 65, 5) AS t(k)), ladder AS (SELECT lightness, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM shades) SELECT lightness, hex, ROUND(color.main.contrast_ratio('#ffffff', hex), 2) AS ratio_on_white, color.main.wcag_level('#ffffff', hex) AS level FROM ladder ORDER BY lightness DESC
+----
+0.6	#ff5233	3.23	AA Large
+0.55	#ff3c1a	3.55	AA Large
+0.5	#ff2700	3.79	AA Large
+0.45	#e52300	4.59	AA
+0.4	#cc1f00	5.58	AA
+0.35	#b31b00	6.83	AA
+0.3	#991700	8.48	AAA
+
+# Text color per background: is_dark picks white/black text, contrast_ratio + wcag_level grade it.
+query TTRT
+SELECT p.bg, CASE WHEN color.main.is_dark(p.bg) THEN '#ffffff' ELSE '#000000' END AS text_hex, ROUND(color.main.contrast_ratio(text_hex, p.bg), 2) AS ratio, color.main.wcag_level(text_hex, p.bg) AS level FROM (VALUES ('#e50914'), ('#e1306c'), ('#808080'), ('#4285f4'), ('#3b5998'), ('#ff9900')) AS p(bg) ORDER BY ratio, p.bg
+----
+#e50914	#ffffff	4.79	AA
+#e1306c	#000000	4.84	AA
+#808080	#000000	5.32	AA
+#4285f4	#000000	5.89	AA
+#3b5998	#ffffff	6.84	AA
+#ff9900	#000000	9.81	AAA
+
+# Named colors readable as body text on white: named_colors + contrast_ratio + wcag_level.
+query TTRT
+SELECT n.name, n.hex, ROUND(color.main.contrast_ratio(n.hex, '#ffffff'), 2) AS ratio, color.main.wcag_level(n.hex, '#ffffff') AS level FROM color.main.named_colors AS n WHERE color.main.wcag_level(n.hex, '#ffffff') IN ('AA', 'AAA') ORDER BY ratio, n.name LIMIT 6
+----
+teal	#008080	4.77	AA
+royalblue	#4169e1	4.85	AA
+crimson	#dc143c	4.99	AA
+green	#008000	5.14	AA
+slateblue	#6a5acd	5.31	AA
+mediumvioletred	#c71585	5.42	AA
+
+# Palette de-duplication: named_colors self-join scored by delta_e.
+query TTTTR
+SELECT name_a, name_b, hex_a, hex_b, ROUND(d, 3) AS delta_e FROM (SELECT a.name AS name_a, b.name AS name_b, a.hex AS hex_a, b.hex AS hex_b, color.main.delta_e(a.hex, b.hex) AS d FROM color.main.named_colors AS a JOIN color.main.named_colors AS b ON a.name < b.name AND a.hex <> b.hex) AS pairs WHERE d < 2 ORDER BY delta_e, name_a, name_b
+----
+chartreuse	lawngreen	#7fff00	#7cfc00	0.652
+darkblue	navy	#00008b	#000080	1.56
+linen	seashell	#faf0e6	#fff5ee	1.819
+blanchedalmond	papayawhip	#ffebcd	#ffefd5	1.839
+moccasin	wheat	#ffe4b5	#f5deb3	1.99
+
+# Color harmony: from_hex -> rgb_to_hsl -> hue rotate -> hsl_to_rgb -> to_hex -> nearest_color_name.
+query TTT
+WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), harmony AS (SELECT t.role, t.shift, color.main.hsl_to_rgb((base.hsl.h + t.shift) % 360, base.hsl.s, base.hsl.l) AS rgb FROM base, (VALUES ('base', 0), ('triad 1', 120), ('complement', 180), ('triad 2', 240)) AS t(role, shift)), palette AS (SELECT role, shift, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM harmony) SELECT role, hex, color.main.nearest_color_name(hex) AS nearest_name FROM palette ORDER BY shift
+----
+base	#ff6347	tomato
+triad 1	#47ff63	springgreen
+complement	#47e3ff	skyblue
+triad 2	#6347ff	slateblue
+
+# Snap brand colors to CSS names: nearest_color_name + named_colors + delta_e.
+query TTTRT
+SELECT p.hex, n.name AS css_name, n.hex AS css_hex, ROUND(color.main.delta_e(p.hex, n.hex), 2) AS delta_e, color.main.delta_e(p.hex, n.hex) < 2 AS close_match FROM (VALUES ('#fafafa'), ('#ffd800'), ('#f40009'), ('#4285f4'), ('#1da1f2')) AS p(hex) JOIN color.main.named_colors AS n ON n.name = color.main.nearest_color_name(p.hex) ORDER BY delta_e, p.hex
+----
+#ffd800	gold	#ffd700	0.32	true
+#fafafa	white	#ffffff	1.0	true
+#f40009	red	#ff0000	2.55	false
+#4285f4	dodgerblue	#1e90ff	5.05	false
+#1da1f2	dodgerblue	#1e90ff	7.03	false
+
+# HSL lightness vs CIELAB L*: named_colors + from_hex + rgb_to_hsl + rgb_to_lab.
+query TTR
+WITH rgb AS (SELECT n.name, n.hex, color.main.from_hex(n.hex) AS c FROM color.main.named_colors AS n), spaces AS (SELECT name, hex, color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl, color.main.rgb_to_lab(c.r, c.g, c.b) AS lab FROM rgb) SELECT name, hex, ROUND(lab.l, 1) AS lab_lightness FROM spaces WHERE ROUND(hsl.l, 3) = 0.5 ORDER BY lab_lightness DESC, name
+----
+yellow	#ffff00	97.1
+aqua	#00ffff	91.1
+cyan	#00ffff	91.1
+chartreuse	#7fff00	89.9
+springgreen	#00ff7f	88.5
+lime	#00ff00	87.7
+gold	#ffd700	86.9
+yellowgreen	#9acd32	76.5
+orange	#ffa500	74.9
+limegreen	#32cd32	72.6
+deepskyblue	#00bfff	72.5
+darkorange	#ff8c00	69.5
+cadetblue	#5f9ea0	61.2
+fuchsia	#ff00ff	60.3
+magenta	#ff00ff	60.3
+orangered	#ff4500	57.6
+red	#ff0000	53.2
+blue	#0000ff	32.3
+
+# Only 32 of the 148 named colors reach AA or better as text on white.
+query I
+SELECT COUNT(*) FROM color.main.named_colors AS n WHERE color.main.wcag_level(n.hex, '#ffffff') IN ('AA', 'AAA')
+----
+32
+
+statement ok
+USE memory;
+
+statement ok
+DETACH color;

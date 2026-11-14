@@ -130,6 +130,12 @@ pub fn rgb_to_hsl(rgb: Rgb) -> (f64, f64, f64) {
     (h, s, l)
 }
 
+/// [`hsl_to_rgb`] for SQL input: `None` (→ NULL) when any component is NaN or
+/// infinite, since there is no meaningful hue to wrap or value to clamp.
+pub fn hsl_to_rgb_checked(h: f64, s: f64, l: f64) -> Option<Rgb> {
+    (h.is_finite() && s.is_finite() && l.is_finite()).then(|| hsl_to_rgb(h, s, l))
+}
+
 /// `hsl_to_rgb`: `h` in degrees (wrapped), `s`/`l` clamped to `0..1`.
 pub fn hsl_to_rgb(h: f64, s: f64, l: f64) -> Rgb {
     let s = s.clamp(0.0, 1.0);
@@ -326,9 +332,21 @@ pub fn wcag_level(ratio: f64) -> &'static str {
     }
 }
 
-/// A color is "dark" when its WCAG relative luminance is below `0.5`.
+/// WCAG relative luminance at which white and black text give the *same*
+/// contrast ratio: `(1 + 0.05) / (L + 0.05) = (L + 0.05) / 0.05` ⇒
+/// `L = sqrt(0.0525) − 0.05 ≈ 0.1791`.
+pub const DARK_LUMINANCE_THRESHOLD: f64 = 0.179_128_784_747_792;
+
+/// A color is "dark" when white text on it has a strictly higher WCAG contrast
+/// ratio than black text, i.e. its relative luminance is below
+/// [`DARK_LUMINANCE_THRESHOLD`] (≈ 0.1791). This is the threshold that makes
+/// "light text on dark colors, dark text on light colors" always pick the
+/// higher-contrast option (a naive `luminance < 0.5` cut-off gets it wrong for
+/// mid-tones such as `#808080`, where black text is far more legible).
 pub fn is_dark(rgb: Rgb) -> bool {
-    luminance(rgb) < 0.5
+    let white = Rgb::new(255, 255, 255);
+    let black = Rgb::new(0, 0, 0);
+    contrast_ratio(white, rgb) > contrast_ratio(black, rgb)
 }
 
 // ---------------------------------------------------------------------------
@@ -362,6 +380,7 @@ pub const NAMED_COLORS: &[(&str, u8, u8, u8)] = &[
     ("darkcyan", 0, 139, 139),
     ("darkgoldenrod", 184, 134, 11),
     ("darkgray", 169, 169, 169),
+    ("darkgrey", 169, 169, 169),
     ("darkgreen", 0, 100, 0),
     ("darkkhaki", 189, 183, 107),
     ("darkmagenta", 139, 0, 139),
@@ -373,11 +392,13 @@ pub const NAMED_COLORS: &[(&str, u8, u8, u8)] = &[
     ("darkseagreen", 143, 188, 143),
     ("darkslateblue", 72, 61, 139),
     ("darkslategray", 47, 79, 79),
+    ("darkslategrey", 47, 79, 79),
     ("darkturquoise", 0, 206, 209),
     ("darkviolet", 148, 0, 211),
     ("deeppink", 255, 20, 147),
     ("deepskyblue", 0, 191, 255),
     ("dimgray", 105, 105, 105),
+    ("dimgrey", 105, 105, 105),
     ("dodgerblue", 30, 144, 255),
     ("firebrick", 178, 34, 34),
     ("floralwhite", 255, 250, 240),
@@ -388,6 +409,7 @@ pub const NAMED_COLORS: &[(&str, u8, u8, u8)] = &[
     ("gold", 255, 215, 0),
     ("goldenrod", 218, 165, 32),
     ("gray", 128, 128, 128),
+    ("grey", 128, 128, 128),
     ("green", 0, 128, 0),
     ("greenyellow", 173, 255, 47),
     ("honeydew", 240, 255, 240),
@@ -405,12 +427,14 @@ pub const NAMED_COLORS: &[(&str, u8, u8, u8)] = &[
     ("lightcyan", 224, 255, 255),
     ("lightgoldenrodyellow", 250, 250, 210),
     ("lightgray", 211, 211, 211),
+    ("lightgrey", 211, 211, 211),
     ("lightgreen", 144, 238, 144),
     ("lightpink", 255, 182, 193),
     ("lightsalmon", 255, 160, 122),
     ("lightseagreen", 32, 178, 170),
     ("lightskyblue", 135, 206, 250),
     ("lightslategray", 119, 136, 153),
+    ("lightslategrey", 119, 136, 153),
     ("lightsteelblue", 176, 196, 222),
     ("lightyellow", 255, 255, 224),
     ("lime", 0, 255, 0),
@@ -464,6 +488,7 @@ pub const NAMED_COLORS: &[(&str, u8, u8, u8)] = &[
     ("skyblue", 135, 206, 235),
     ("slateblue", 106, 90, 205),
     ("slategray", 112, 128, 144),
+    ("slategrey", 112, 128, 144),
     ("snow", 255, 250, 250),
     ("springgreen", 0, 255, 127),
     ("steelblue", 70, 130, 180),
@@ -631,6 +656,73 @@ mod tests {
     fn is_dark_basic() {
         assert!(is_dark(Rgb::new(0, 0, 0)));
         assert!(!is_dark(Rgb::new(255, 255, 255)));
+        // Mid-grey (luminance ≈ 0.216): black text is 5.32:1, white only 3.95:1,
+        // so it is NOT dark — a `luminance < 0.5` rule wrongly said it was.
+        assert!(!is_dark(Rgb::new(128, 128, 128)));
+        // Navy is dark.
+        assert!(is_dark(Rgb::new(0, 31, 63)));
+    }
+
+    #[test]
+    fn is_dark_always_picks_the_higher_contrast_text() {
+        let white = Rgb::new(255, 255, 255);
+        let black = Rgb::new(0, 0, 0);
+        for &(name, r, g, b) in NAMED_COLORS {
+            let c = Rgb::new(r, g, b);
+            let (cw, cb) = (contrast_ratio(white, c), contrast_ratio(black, c));
+            let text = if is_dark(c) { cw } else { cb };
+            assert!(
+                text >= cw.max(cb) - 1e-12,
+                "{name}: is_dark chose {text:.3} but the best is {:.3}",
+                cw.max(cb)
+            );
+            assert_eq!(
+                is_dark(c),
+                luminance(c) < DARK_LUMINANCE_THRESHOLD,
+                "{name}"
+            );
+        }
+        // The crossover: equal contrast against white and black.
+        let l = DARK_LUMINANCE_THRESHOLD;
+        assert!(((1.05 / (l + 0.05)) - ((l + 0.05) / 0.05)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn named_colors_are_the_full_css4_keyword_set() {
+        // CSS Color Module Level 4 defines 148 named colors, including the seven
+        // British "grey" spellings, which alias their "gray" twins.
+        assert_eq!(NAMED_COLORS.len(), 148);
+        let hex = |n: &str| {
+            let &(_, r, g, b) = NAMED_COLORS.iter().find(|(x, ..)| *x == n).unwrap();
+            (r, g, b)
+        };
+        for g in [
+            "darkgray",
+            "darkslategray",
+            "dimgray",
+            "gray",
+            "lightgray",
+            "lightslategray",
+            "slategray",
+        ] {
+            assert_eq!(hex(g), hex(&g.replace("gray", "grey")), "{g}");
+        }
+        let mut names: Vec<&str> = NAMED_COLORS.iter().map(|(n, ..)| *n).collect();
+        names.sort_unstable();
+        names.dedup();
+        assert_eq!(names.len(), NAMED_COLORS.len(), "duplicate name");
+        // Aliases sort after their "gray" twin, so nearest_color_name keeps
+        // returning the "gray" spelling (ties resolve to first-in-table).
+        assert_eq!(nearest_color_name(Rgb::new(128, 128, 128)), "gray");
+    }
+
+    #[test]
+    fn hsl_to_rgb_checked_rejects_non_finite() {
+        assert_eq!(hsl_to_rgb_checked(f64::NAN, 1.0, 0.5), None);
+        assert_eq!(hsl_to_rgb_checked(0.0, f64::NAN, 0.5), None);
+        assert_eq!(hsl_to_rgb_checked(0.0, 1.0, f64::INFINITY), None);
+        assert_eq!(hsl_to_rgb_checked(f64::NEG_INFINITY, 1.0, 0.5), None);
+        assert_eq!(hsl_to_rgb_checked(0.0, 1.0, 0.5), Some(Rgb::new(255, 0, 0)));
     }
 
     #[test]

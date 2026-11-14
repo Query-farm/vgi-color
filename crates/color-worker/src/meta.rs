@@ -63,6 +63,14 @@ pub const AGENT_TEST_TASKS: &str = r#"[
   {
     "name": "is_color_dark",
     "prompt": "Using this worker, determine whether the color '#001f3f' is dark, so that light-colored text should be placed on top of it. Return a single row with one boolean column named dark."
+  },
+  {
+    "name": "accessible_shade_on_white",
+    "prompt": "Using this worker, find a darker version of the brand color '#1e90ff' that stays legible under white text. Keep its HSL hue and saturation unchanged and try the HSL lightness values k/100 for every whole number k from 0 to 100, converting each back to an sRGB '#rrggbb' color. Which of those colors is the lightest one on which white '#ffffff' text still reaches at least WCAG AA for normal text (a contrast ratio of 4.5 or more)? Return a single row with one VARCHAR column named hex holding the lowercase '#rrggbb' value."
+  },
+  {
+    "name": "named_colors_readable_on_dark_mode",
+    "prompt": "Using this worker's CSS named-color table, how many named colors are legible as normal-size text on the dark-mode background '#121212', meaning they reach WCAG level AA or AAA? Count every name in the table, including alternate spellings such as gray and grey. Return a single row with one integer column named n."
   }
 ]"#;
 

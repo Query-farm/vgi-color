@@ -30,3 +30,7 @@ tasks:
     reference_sql: "SELECT color.main.luminance('#808080') > 0.2 AS is_bright"
   - name: "is_color_dark"
     reference_sql: "SELECT color.main.is_dark('#001f3f') AS dark"
+  - name: "accessible_shade_on_white"
+    reference_sql: "WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#1e90ff') AS c)), shades AS (SELECT t.k, color.main.hsl_to_rgb(base.hsl.h, base.hsl.s, t.k / 100) AS rgb FROM base, range(0, 101) AS t(k)), hexes AS (SELECT k, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM shades) SELECT hex FROM hexes WHERE color.main.contrast_ratio('#ffffff', hex) >= 4.5 ORDER BY k DESC LIMIT 1"
+  - name: "named_colors_readable_on_dark_mode"
+    reference_sql: "SELECT COUNT(*) AS n FROM color.main.named_colors AS c WHERE color.main.wcag_level(c.hex, '#121212') IN ('AA', 'AAA')"

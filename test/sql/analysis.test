@@ -11,7 +11,7 @@ statement ok
 LOAD vgi;
 
 statement ok
-ATTACH 'color' AS color (TYPE vgi, LOCATION '${VGI_COLOR_WORKER}');
+ATTACH 'color' AS color (TYPE vgi, LOCATION '{VGI_COLOR_WORKER}');
 
 statement ok
 SET search_path = 'color.main';
@@ -68,6 +68,19 @@ SELECT is_dark('#ffffff');
 ----
 false
 
+# is_dark uses the WCAG crossover (luminance < ~0.1791), not 0.5: mid-grey takes
+# black text (5.32:1 vs white 3.95:1), so it is not dark; navy is.
+query TT
+SELECT is_dark('#808080'), is_dark('#001f3f');
+----
+false	true
+
+# is_dark always picks the higher-contrast of white/black text, for every named color.
+query I
+SELECT COUNT(*) FROM named_colors WHERE is_dark(hex) <> (contrast_ratio('#ffffff', hex) > contrast_ratio('#000000', hex));
+----
+0
+
 # nearest_color_name maps pure red to 'red'.
 query T
 SELECT nearest_color_name('#ff0000');
@@ -79,6 +92,23 @@ query I
 SELECT COUNT(*) > 0 FROM named_colors();
 ----
 true
+
+# The full CSS Color 4 keyword set: 148 names, including the seven grey aliases.
+query II
+SELECT COUNT(*), COUNT(*) FILTER (WHERE name LIKE '%grey') FROM named_colors;
+----
+148	7
+
+query T
+SELECT hex FROM named_colors WHERE name = 'slategrey';
+----
+#708090
+
+# nearest_color_name keeps returning the 'gray' spelling for an exact grey.
+query T
+SELECT nearest_color_name('#808080');
+----
+gray
 
 # 'red' appears in the table at #ff0000.
 query T

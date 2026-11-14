@@ -21,7 +21,7 @@ pub fn named_colors_table() -> CatTable {
         "named_colors",
         named::output_schema(),
         Arc::new(named::NamedColors),
-        Some("Every CSS named color paired with its '#rrggbb' sRGB hex value.".to_string()),
+        Some("Every CSS named color (148, including the grey/gray alias spellings) paired with its '#rrggbb' sRGB hex value.".to_string()),
         Some(crate::color::NAMED_COLORS.len() as i64),
     );
     // Protocol 3.3: a table-embedded scan is `table_only` (hidden from
@@ -90,17 +90,18 @@ pub fn named_colors_table() -> CatTable {
         ("vgi.category".to_string(), "Reference".to_string()),
         (
             "vgi.example_queries".to_string(),
-            r#"[
-  {
-    "description": "List the first few CSS named colors with their hex values.",
-    "sql": "SELECT name, hex FROM color.main.named_colors ORDER BY name LIMIT 5"
-  },
-  {
-    "description": "Look up the hex value of a specific CSS named color.",
-    "sql": "SELECT hex FROM color.main.named_colors WHERE name = 'tomato'"
-  }
-]"#
-            .to_string(),
+            crate::examples::example_queries_json(&[
+                crate::examples::Example {
+                    description: "List the first few CSS named colors with their hex values.",
+                    sql: "SELECT name, hex FROM color.main.named_colors ORDER BY name LIMIT 5",
+                },
+                crate::examples::Example {
+                    description: "Look up the hex value of a specific CSS named color.",
+                    sql: "SELECT hex FROM color.main.named_colors WHERE name = 'tomato'",
+                },
+                crate::examples::READABLE_TEXT_ON_WHITE,
+                crate::examples::NEAR_DUPLICATE_NAMED_COLORS,
+            ]),
         ),
     ];
     t

@@ -4,7 +4,7 @@
 //! * `luminance(hex) -> DOUBLE` — WCAG relative luminance (0..1)
 //! * `contrast_ratio(hex_a, hex_b) -> DOUBLE` — WCAG contrast (1..21)
 //! * `wcag_level(hex_fg, hex_bg) -> VARCHAR` — 'AAA'|'AA'|'AA Large'|'fail'
-//! * `is_dark(hex) -> BOOLEAN` — luminance < 0.5
+//! * `is_dark(hex) -> BOOLEAN` — white text out-contrasts black (luminance < ≈0.1791)
 //! * `nearest_color_name(hex) -> VARCHAR` — closest CSS named color by ΔE
 //!
 //! Invalid hex is treated as missing data → NULL (never an error, never a panic).
@@ -286,13 +286,16 @@ impl ScalarFunction for WcagLevel {
     }
 
     fn metadata(&self) -> FunctionMetadata {
-        let examples = vec![FunctionExample {
-            sql: "SELECT color.main.wcag_level('#595959', '#ffffff');".into(),
-            description: "Classify the WCAG conformance level of dark-grey text on a white \
+        let examples = vec![
+            FunctionExample {
+                sql: "SELECT color.main.wcag_level('#595959', '#ffffff');".into(),
+                description: "Classify the WCAG conformance level of dark-grey text on a white \
                           background."
-                .into(),
-            expected_output: None,
-        }];
+                    .into(),
+                expected_output: None,
+            },
+            crate::examples::ACCESSIBLE_SHADE_LADDER.to_function_example(),
+        ];
         let mut tags = crate::meta::object_tags(
             "WCAG Conformance Level",
             "Classify the WCAG 2.x conformance level for normal-size text given a foreground \
@@ -370,7 +373,8 @@ impl ScalarFunction for WcagLevel {
     }
 }
 
-/// `is_dark(hex) -> BOOLEAN` (luminance < 0.5). NULL if invalid.
+/// `is_dark(hex) -> BOOLEAN` (white text gives higher WCAG contrast than black,
+/// i.e. luminance < ≈0.1791). NULL if invalid.
 pub struct IsDark;
 
 impl ScalarFunction for IsDark {
@@ -379,18 +383,26 @@ impl ScalarFunction for IsDark {
     }
 
     fn metadata(&self) -> FunctionMetadata {
-        let examples = vec![FunctionExample {
-            sql: "SELECT color.main.is_dark('#001f3f');".into(),
-            description: "Test whether a navy background is dark (so light text should be used)."
-                .into(),
-            expected_output: None,
-        }];
+        let examples = vec![
+            FunctionExample {
+                sql: "SELECT color.main.is_dark('#001f3f');".into(),
+                description:
+                    "Test whether a navy background is dark (so light text should be used).".into(),
+                expected_output: None,
+            },
+            crate::examples::TEXT_COLOR_FOR_BACKGROUNDS.to_function_example(),
+        ];
         let mut tags = crate::meta::object_tags(
             "Detect Dark Color",
-            "Return TRUE when an sRGB hex color's WCAG relative luminance is below 0.5, i.e. \
-             the color is dark enough that light foreground text reads better on it. Returns \
-             NULL if the input is not a valid hex color.",
-            "True if a hex color is dark (luminance < 0.5), e.g. `is_dark('#001f3f')`.",
+            "Return TRUE when white text on this sRGB hex background has a higher WCAG \
+             contrast ratio than black text, i.e. the color is dark enough that light \
+             foreground text reads better on it. This is the WCAG crossover point: relative \
+             luminance below about 0.1791 (not 0.5), so mid-tones such as '#808080' are NOT \
+             dark (black text is 5.32:1 on it, white only 3.95:1). Use is_dark to choose \
+             '#ffffff' or '#000000' text; the chosen text always reaches at least 4.58:1. \
+             Returns NULL if the input is not a valid hex color.",
+            "True if white text out-contrasts black text on a hex color (WCAG luminance below \
+             ≈0.1791), e.g. `is_dark('#001f3f')` → true, `is_dark('#808080')` → false.",
             &[
                 "is_dark",
                 "dark color",
@@ -407,8 +419,8 @@ impl ScalarFunction for IsDark {
             crate::meta::example_queries_json(&examples),
         ));
         FunctionMetadata {
-            description: "True if a hex color's WCAG relative luminance is below 0.5; NULL if \
-                          invalid"
+            description: "True if white text has higher WCAG contrast than black text on a \
+                          hex color (luminance below ~0.1791); NULL if invalid"
                 .into(),
             return_type: Some(DataType::Boolean),
             examples,
@@ -455,12 +467,16 @@ impl ScalarFunction for NearestColorName {
     }
 
     fn metadata(&self) -> FunctionMetadata {
-        let examples = vec![FunctionExample {
-            sql: "SELECT color.main.nearest_color_name('#ff6347');".into(),
-            description: "Find the closest CSS named color to a given hex value (by CIEDE2000 ΔE)."
-                .into(),
-            expected_output: None,
-        }];
+        let examples = vec![
+            FunctionExample {
+                sql: "SELECT color.main.nearest_color_name('#ff6347');".into(),
+                description:
+                    "Find the closest CSS named color to a given hex value (by CIEDE2000 ΔE)."
+                        .into(),
+                expected_output: None,
+            },
+            crate::examples::SNAP_TO_CSS_NAME.to_function_example(),
+        ];
         let mut tags = crate::meta::object_tags(
             "Nearest Named Color",
             "Return the name of the CSS named color closest to a given sRGB hex color, measured \

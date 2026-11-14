@@ -38,11 +38,17 @@ pub fn int_val(col: &ArrayRef, row: usize) -> Result<Option<i32>> {
     }
     Ok(Some(match col.data_type() {
         DataType::Int32 => col.as_primitive::<Int32Type>().value(row),
-        DataType::Int64 => col.as_primitive::<Int64Type>().value(row) as i32,
+        // Wider widths saturate into i32 (not `as`, which wraps: 2^32 → 0) so an
+        // out-of-range channel still clamps to the right end of 0..=255.
+        DataType::Int64 => saturate_i32(col.as_primitive::<Int64Type>().value(row)),
         DataType::Int16 => col.as_primitive::<Int16Type>().value(row) as i32,
         DataType::Int8 => col.as_primitive::<Int8Type>().value(row) as i32,
-        DataType::UInt64 => col.as_primitive::<UInt64Type>().value(row) as i32,
-        DataType::UInt32 => col.as_primitive::<UInt32Type>().value(row) as i32,
+        DataType::UInt64 => {
+            i32::try_from(col.as_primitive::<UInt64Type>().value(row)).unwrap_or(i32::MAX)
+        }
+        DataType::UInt32 => {
+            i32::try_from(col.as_primitive::<UInt32Type>().value(row)).unwrap_or(i32::MAX)
+        }
         DataType::UInt16 => col.as_primitive::<UInt16Type>().value(row) as i32,
         DataType::UInt8 => col.as_primitive::<UInt8Type>().value(row) as i32,
         other => {
@@ -51,6 +57,11 @@ pub fn int_val(col: &ArrayRef, row: usize) -> Result<Option<i32>> {
             )))
         }
     }))
+}
+
+/// Narrow an `i64` to `i32`, saturating at the bounds instead of wrapping.
+fn saturate_i32(v: i64) -> i32 {
+    v.clamp(i32::MIN as i64, i32::MAX as i64) as i32
 }
 
 /// Read element `row` of a numeric column as `f64`, or `None` if null. Used by the
@@ -233,5 +244,26 @@ pub mod test_support {
         let bind = BindParams::default();
         let bound = f.on_bind(&bind).unwrap();
         bound.output_schema.field(0).data_type().clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use arrow_array::{ArrayRef, Int64Array, UInt32Array, UInt64Array};
+
+    use super::int_val;
+
+    #[test]
+    fn int_val_saturates_wide_integers() {
+        let i64s: ArrayRef = Arc::new(Int64Array::from(vec![4_294_967_296, -4_294_967_041, 7]));
+        assert_eq!(int_val(&i64s, 0).unwrap(), Some(i32::MAX));
+        assert_eq!(int_val(&i64s, 1).unwrap(), Some(i32::MIN));
+        assert_eq!(int_val(&i64s, 2).unwrap(), Some(7));
+        let u32s: ArrayRef = Arc::new(UInt32Array::from(vec![3_000_000_000]));
+        assert_eq!(int_val(&u32s, 0).unwrap(), Some(i32::MAX));
+        let u64s: ArrayRef = Arc::new(UInt64Array::from(vec![u64::MAX]));
+        assert_eq!(int_val(&u64s, 0).unwrap(), Some(i32::MAX));
     }
 }

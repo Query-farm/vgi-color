@@ -334,16 +334,20 @@ impl ScalarFunction for HslToRgb {
     }
 
     fn metadata(&self) -> FunctionMetadata {
-        let examples = vec![FunctionExample {
-            sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;".into(),
-            description: "Convert fully-saturated green (hue 120°) back to an RGB triple.".into(),
-            expected_output: None,
-        }];
+        let examples = vec![
+            FunctionExample {
+                sql: "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;".into(),
+                description: "Convert fully-saturated green (hue 120°) back to an RGB triple."
+                    .into(),
+                expected_output: None,
+            },
+            crate::examples::COLOR_HARMONY.to_function_example(),
+        ];
         let mut tags = crate::meta::object_tags(
             "Convert HSL to RGB",
             "Convert an HSL color (h in degrees, s and l in [0,1]) back to an RGB triple, \
              returning `STRUCT(r, g, b)` of 0-255 integer channels. Returns a NULL struct if \
-             any component is NULL.",
+             any component is NULL, NaN or infinite.",
             "Convert HSL to RGB, e.g. `hsl_to_rgb(120, 1.0, 0.5)` → `(r := 0, g := 255, \
              b := 0)`.",
             &[
@@ -396,8 +400,9 @@ impl ScalarFunction for HslToRgb {
         let mut bb = Int32Builder::new();
         let mut valid: Vec<bool> = Vec::with_capacity(rows);
         for i in 0..rows {
-            match (double_val(h, i)?, double_val(s, i)?, double_val(l, i)?) {
-                (Some(h), Some(s), Some(l)) => {
+            let hsl = (double_val(h, i)?, double_val(s, i)?, double_val(l, i)?);
+            match hsl {
+                (Some(h), Some(s), Some(l)) if color::hsl_to_rgb_checked(h, s, l).is_some() => {
                     let rgb = color::hsl_to_rgb(h, s, l);
                     rb.append_value(rgb.r as i32);
                     gb.append_value(rgb.g as i32);
@@ -436,11 +441,14 @@ impl ScalarFunction for RgbToLab {
     }
 
     fn metadata(&self) -> FunctionMetadata {
-        let examples = vec![FunctionExample {
-            sql: "SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;".into(),
-            description: "Convert white to CIELAB (D65) lightness L* and a*/b* chroma.".into(),
-            expected_output: None,
-        }];
+        let examples = vec![
+            FunctionExample {
+                sql: "SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;".into(),
+                description: "Convert white to CIELAB (D65) lightness L* and a*/b* chroma.".into(),
+                expected_output: None,
+            },
+            crate::examples::HSL_VS_LAB_LIGHTNESS.to_function_example(),
+        ];
         let mut tags = crate::meta::object_tags(
             "Convert RGB to CIELAB",
             "Convert an RGB triple (0-255, clamped) to the perceptually-uniform CIELAB color \
@@ -619,6 +627,34 @@ mod tests {
         assert_eq!(s.column(0).as_primitive::<Int32Type>().value(0), 255);
         assert_eq!(s.column(1).as_primitive::<Int32Type>().value(0), 0);
         assert_eq!(s.column(2).as_primitive::<Int32Type>().value(0), 0);
+    }
+
+    #[test]
+    fn hsl_to_rgb_non_finite_is_null() {
+        // NaN/infinite components used to fall through to a bogus color (NaN hue
+        // → red); they have no meaningful hue/lightness, so they are NULL.
+        let col = |v: Vec<Option<f64>>| Arc::new(Float64Array::from(v)) as ArrayRef;
+        let batch = batch_of(vec![
+            (
+                "h",
+                col(vec![
+                    Some(f64::NAN),
+                    Some(0.0),
+                    Some(f64::INFINITY),
+                    Some(0.0),
+                ]),
+            ),
+            (
+                "s",
+                col(vec![Some(1.0), Some(f64::NAN), Some(1.0), Some(1.0)]),
+            ),
+            ("l", col(vec![Some(0.5), Some(0.5), Some(0.5), Some(0.5)])),
+        ]);
+        let out = run_scalar_on(&HslToRgb, batch, Arguments::default()).unwrap();
+        assert!(out.is_null(0), "NaN hue → NULL");
+        assert!(out.is_null(1), "NaN saturation → NULL");
+        assert!(out.is_null(2), "infinite hue → NULL");
+        assert!(!out.is_null(3), "finite input still converts");
     }
 
     #[test]

@@ -15,12 +15,12 @@
 //! SET search_path = 'color.main';
 //!
 //! SELECT to_hex(255, 0, 0);                       -- '#ff0000'
-//! SELECT (from_hex('#ff0000')).*;                 -- (r := 255, g := 0, b := 0)
-//! SELECT (rgb_to_hsl(255, 0, 0)).*;               -- (h := 0, s := 1, l := 0.5)
+//! SELECT unnest(from_hex('#ff0000'));            -- r = 255, g = 0, b = 0
+//! SELECT unnest(rgb_to_hsl(255, 0, 0));          -- h = 0, s = 1, l = 0.5
 //! SELECT ROUND(contrast_ratio('#000000','#ffffff'), 1);  -- 21.0
 //! SELECT wcag_level('#000000', '#ffffff');        -- 'AAA'
 //! SELECT nearest_color_name('#ff0000');           -- 'red'
-//! SELECT * FROM named_colors();                   -- CSS named-color table
+//! SELECT name, hex FROM named_colors ORDER BY name; -- CSS named-color table
 //! ```
 //!
 //! The pure color-science engine lives in [`color`]; the `scalar/` and `table/`
@@ -28,6 +28,7 @@
 
 mod arrow_io;
 pub mod color;
+mod examples;
 mod meta;
 mod scalar;
 mod table;
@@ -123,7 +124,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  dependencies. The same algorithms are available in open-source libraries such as \
                  the Rust [palette](https://github.com/Ogeon/palette) crate \
                  ([docs](https://docs.rs/palette)); here they run inside a fast, dependency-free \
-                 worker. The 147 CSS named colors come from the \
+                 worker. The 148 CSS named colors come from the \
                  [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/#named-colors) \
                  specification.\n\n\
                  ## Key concepts\n\n\
@@ -245,19 +246,11 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                         .to_string(),
                 ),
                 // VGI506/VGI515 representative example queries for the schema, as a
-                // JSON list of {description, sql} so every example is described.
+                // JSON list of {description, sql} so every example is described:
+                // single-function basics, then every composed example.
                 (
                     "vgi.example_queries".to_string(),
-                    r#"[
-  {"description": "Format an RGB triple as a '#rrggbb' hex string.", "sql": "SELECT color.main.to_hex(255, 99, 71)"},
-  {"description": "Parse a hex color into its red channel.", "sql": "SELECT (color.main.from_hex('#ff6347')).r AS red"},
-  {"description": "Convert pure red to its HSL hue.", "sql": "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue"},
-  {"description": "Compute the WCAG contrast ratio between black and white.", "sql": "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1) AS ratio"},
-  {"description": "Classify the WCAG conformance level of dark-grey text on white.", "sql": "SELECT color.main.wcag_level('#595959', '#ffffff') AS level"},
-  {"description": "Find the closest CSS named color to a hex value.", "sql": "SELECT color.main.nearest_color_name('#ff6347') AS name"},
-  {"description": "List a few CSS named colors with their hex values.", "sql": "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5"}
-]"#
-                        .to_string(),
+                    schema_example_queries(),
                 ),
             ],
             views: Vec::new(),
@@ -266,6 +259,44 @@ fn catalog_metadata(name: &str) -> CatalogModel {
         }],
         ..Default::default()
     }
+}
+
+/// The schema-level `vgi.example_queries` list: one basic example per area,
+/// followed by every composed example ([`examples::COMPOSED`]), each defined once
+/// in `examples.rs`.
+fn schema_example_queries() -> String {
+    let mut all = vec![
+        examples::Example {
+            description: "Format an RGB triple as a '#rrggbb' hex string.",
+            sql: "SELECT color.main.to_hex(255, 99, 71)",
+        },
+        examples::Example {
+            description: "Parse a hex color into its red channel.",
+            sql: "SELECT (color.main.from_hex('#ff6347')).r AS red",
+        },
+        examples::Example {
+            description: "Convert pure red to its HSL hue.",
+            sql: "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue",
+        },
+        examples::Example {
+            description: "Compute the WCAG contrast ratio between black and white.",
+            sql: "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1) AS ratio",
+        },
+        examples::Example {
+            description: "Classify the WCAG conformance level of dark-grey text on white.",
+            sql: "SELECT color.main.wcag_level('#595959', '#ffffff') AS level",
+        },
+        examples::Example {
+            description: "Find the closest CSS named color to a hex value.",
+            sql: "SELECT color.main.nearest_color_name('#ff6347') AS name",
+        },
+        examples::Example {
+            description: "List a few CSS named colors with their hex values.",
+            sql: "SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5",
+        },
+    ];
+    all.extend_from_slice(examples::COMPOSED);
+    examples::example_queries_json(&all)
 }
 
 /// The catalog name DuckDB sees in `ATTACH 'color' (TYPE vgi, …)`. Defaults to
@@ -291,4 +322,21 @@ pub fn build_worker() -> Worker {
     // auto-registers its scan, so no separate `table::register` is needed.
     worker.set_catalog(catalog_metadata(&name));
     worker
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// vgi-lint VGI417 caps a `vgi.example_queries` list at 8,000 characters.
+    #[test]
+    fn schema_example_queries_fit_the_lint_cap() {
+        let json = schema_example_queries();
+        assert!(
+            json.chars().count() <= 8000,
+            "{} chars",
+            json.chars().count()
+        );
+        assert!(json.starts_with('[') && json.ends_with(']'));
+    }
 }

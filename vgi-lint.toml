@@ -1,0 +1,18 @@
+# vgi-lint settings for this worker: https://github.com/Query-farm/vgi-lint-check
+# `vgi-lint lint` in this directory and CI's metadata job read this file. Look up a
+# rule with `vgi-lint explain VGI123`; print the metadata tag contract with
+# `vgi-lint spec`. The agent-task graders (vgi-agent-tests.yaml) are discovered
+# from this directory too.
+
+# The worker to attach, relative to this directory. Build it first with `make build`.
+location = "target/release/color-worker"
+
+# Every finding fails, info included.
+fail_on = "info"
+
+# Waive a finding only with a kind and a reason, so the waiver can be audited:
+#   domain-exemption  permanent and legitimate for this worker
+#   deferred          a real defect you will fix; add expires = "YYYY-MM-DD"
+#   timing            slow or flaky because of the environment, not the metadata
+#   tooling-bug       the linter is wrong; report it upstream
+ignore = []
