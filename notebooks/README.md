@@ -27,7 +27,7 @@ separate destination; a failed execution leaves the saved default untouched.
 If an older Colab install replaced kernel libraries, save your work, choose
 **Runtime → Disconnect and delete runtime**, and open this current notebook again.
 
-The [shared standard](https://github.com/Query-farm/vgi-example-notebooks/blob/v0.3.4/docs/standard.md),
+The [shared standard](https://github.com/Query-farm/vgi-example-notebooks/blob/v0.3.6/docs/standard.md),
 runner, canonical branding, isolated SQL-secret directory and SVG presentation live in
 [vgi-example-notebooks](https://github.com/Query-farm/vgi-example-notebooks).
 `color_example.py` validates parameters and presents returned results. All worker
