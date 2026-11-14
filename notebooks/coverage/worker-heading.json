@@ -1,0 +1,26 @@
+{
+  "repository": "Query-farm/vgi-color",
+  "title": "Color Science & Accessibility",
+  "subtitle": "Convert colors between hex, RGB, HSL and CIELAB, measure CIEDE2000 difference, and check WCAG contrast for accessibility.",
+  "evidence_sha256": "7278d30ece8b39f1f5f0343bb6b03b2935bb1d3c098c314a84447be282ceb06c",
+  "provenance": "Actual catalog tags from the released runtime used by the notebook",
+  "worker_release": "v0.5.0",
+  "runtime_export": {
+    "attach": "ATTACH 'color' (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-color@v0.5.0');",
+    "query": "SELECT database_name, comment, map_extract_value(tags,'vgi.title') AS title, map_extract_value(tags,'vgi.subtitle') AS subtitle FROM duckdb_databases() WHERE map_extract_value(tags,'vgi.title') IS NOT NULL",
+    "columns": [
+      "database_name",
+      "comment",
+      "title",
+      "subtitle"
+    ],
+    "rows": [
+      [
+        "color",
+        "Color science for SQL: color-space conversions, CIEDE2000 (\u0394E00) color difference, and WCAG contrast/accessibility.",
+        "Color Science & Accessibility",
+        "Convert colors between hex, RGB, HSL and CIELAB, measure CIEDE2000 difference, and check WCAG contrast for accessibility."
+      ]
+    ]
+  }
+}
