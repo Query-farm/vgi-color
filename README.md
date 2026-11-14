@@ -197,3 +197,7 @@ Written by [Query.Farm](https://query.farm).
 
 Copyright 2026 Query Farm LLC - https://query.farm
 
+
+## Executed notebooks
+
+[Color contrast and color difference](notebooks/README.md) explores a synthetic design brief through the published VGI worker.
