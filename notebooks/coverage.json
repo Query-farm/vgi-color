@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "catalogs": {
+    "released": {
+      "path": "coverage/catalog-released.json",
+      "sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+        "notes": "Complete actual release/current exports: twelve functions plus same-name named_colors table yield twelve logical surfaces, zero views. All local read computations. No credential/write exclusions. Registration and signatures reviewed; current source and Cargo trees match release exactly."
+      }
+    },
+    "current": {
+      "path": "coverage/catalog-current.json",
+      "sha256": "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "catalog_sha256": "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049",
+        "notes": "Complete actual release/current exports: twelve functions plus same-name named_colors table yield twelve logical surfaces, zero views. All local read computations. No credential/write exclusions. Registration and signatures reviewed; current source and Cargo trees match release exactly."
+      }
+    }
+  },
+  "notebooks": [
+    {
+      "path": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+      "execution": {
+        "path": "coverage/run-01.json",
+        "sha256": "9b7fd6ea368ee0a4aec549118db5499b8cab97dece557ed2a8f43b8b5404190c"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "object": {
+        "schema": "main",
+        "name": "contrast_ratio"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "baseline-query",
+          "reference": "color.main.contrast_ratio"
+        }
+      ],
+      "narrative_cells": [
+        "baseline-story"
+      ],
+      "result_cells": [
+        "baseline-finding"
+      ],
+      "interpretation_cells": [
+        "baseline-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Measure the existing label/background pair before choosing an intervention.",
+        "finding": "The original white-on-tomato pair returns2.9462:1, below the4.5 target; the chosen background and black-text alternatives meet the target. This numerical condition is not whole-interface certification."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "delta_e"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "shade-query",
+          "reference": "color.main.delta_e"
+        }
+      ],
+      "narrative_cells": [
+        "shade-story"
+      ],
+      "result_cells": [
+        "shade-finding"
+      ],
+      "interpretation_cells": [
+        "shade-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Minimize background departure subject to a separate contrast requirement.",
+        "finding": "The closest eligible sampled background is #e52300 at brand deltaE12.95. This is a finite fixed-hue/saturation family, not an unrestricted color-space optimum."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "luminance"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "baseline-query",
+          "reference": "color.main.luminance"
+        }
+      ],
+      "narrative_cells": [
+        "baseline-story"
+      ],
+      "result_cells": [
+        "baseline-finding"
+      ],
+      "interpretation_cells": [
+        "baseline-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Inspect the luminance input to text contrast and distinguish it from HSL lightness.",
+        "finding": "The original background relative luminance is0.3064; HSL lightness is0.6392. The notebook checks the contrast formula from returned luminances."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "wcag_level"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "baseline-query",
+          "reference": "color.main.wcag_level"
+        }
+      ],
+      "narrative_cells": [
+        "baseline-story"
+      ],
+      "result_cells": [
+        "baseline-finding"
+      ],
+      "interpretation_cells": [
+        "baseline-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Compare the worker ordinary-text grade with the custom numeric threshold.",
+        "finding": "The original pair returns fail. Grades summarize numerical text thresholds; the custom target and full conformance remain separate."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "is_dark"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "baseline-query",
+          "reference": "color.main.is_dark"
+        }
+      ],
+      "narrative_cells": [
+        "baseline-story"
+      ],
+      "result_cells": [
+        "decision-finding"
+      ],
+      "interpretation_cells": [
+        "decision-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Choose the higher-contrast black or white label when the background is fixed.",
+        "finding": "The crossover selects black text, giving7.1277:1 on unchanged tomato. Background distance is zero because only the label changes."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "named_colors"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "css-query",
+          "reference": "color.main.named_colors"
+        }
+      ],
+      "narrative_cells": [
+        "css-story"
+      ],
+      "result_cells": [
+        "css-chart"
+      ],
+      "interpretation_cells": [
+        "css-chart"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Use a real named-color vocabulary to test whether color difference and contrast impose the same ordering.",
+        "finding": "148 keywords reduce to139 distinct backgrounds; grouping aliases avoids duplicate weight, and a returned ordering reversal demonstrates separate metrics."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "from_hex"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "space-query",
+          "reference": "color.main.from_hex"
+        }
+      ],
+      "narrative_cells": [
+        "shade-story"
+      ],
+      "result_cells": [
+        "space-finding"
+      ],
+      "interpretation_cells": [
+        "space-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Parse the authored background into channel inputs for a controlled hue/saturation family.",
+        "finding": "Tomato parses toRGB255,99,71; those exact channels seed the HSL transform, rather than a manually assumed hue."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "rgb_to_hsl"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "space-query",
+          "reference": "color.main.rgb_to_hsl"
+        }
+      ],
+      "narrative_cells": [
+        "shade-story"
+      ],
+      "result_cells": [
+        "space-finding"
+      ],
+      "interpretation_cells": [
+        "space-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Find the original hue and saturation held constant during shade search.",
+        "finding": "Returned HSL9.13degrees,1.0000,0.6392 defines the family. HSL lightness is not relative luminance or a perceptual step size."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "hsl_to_rgb"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "shade-query",
+          "reference": "color.main.hsl_to_rgb"
+        }
+      ],
+      "narrative_cells": [
+        "shade-story"
+      ],
+      "result_cells": [
+        "shade-finding"
+      ],
+      "interpretation_cells": [
+        "shade-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Generate a finite eight-bit RGB family at0.01 HSL lightness steps.",
+        "finding": "101 distinct candidates include the original;46 meet the default contrast target. Rounded candidate RGB is what the worker measures."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "to_hex"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "sql": [
+        {
+          "cell": "shade-query",
+          "reference": "color.main.to_hex"
+        }
+      ],
+      "narrative_cells": [
+        "shade-story"
+      ],
+      "result_cells": [
+        "shade-finding"
+      ],
+      "interpretation_cells": [
+        "shade-finding"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-14T18:04:32.286037+00:00",
+        "notebook_sha256": "f98c398d065e27e3163fb7e42eba3ccdf1aec50dbd0bd13a6313a5ddb4fde511",
+        "catalog_sha256": [
+          "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+          "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049"
+        ],
+        "purpose": "Express generated RGB as exact sRGB strings for deduplication, measurement and final design choice.",
+        "finding": "Canonical candidate hex strings support distinct-color selection, including selected #e52300. The decision chart uses the same returned hex pair."
+      }
+    }
+  ]
+}

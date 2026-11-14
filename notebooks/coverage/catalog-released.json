@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "repository": "Query-farm/vgi-color",
+  "revision": "v0.5.0",
+  "captured_at": "2026-11-14T18:02:56.949680+00:00",
+  "default_schema": "main",
+  "scope": "all_public_functions_and_tables",
+  "complete": true,
+  "evidence": [
+    {
+      "path": "coverage/functions.json",
+      "sha256": "7f56dd1a00b4c12c00a2c5342183825472e74b0d908cb1a6a7382ea4d1482dc5",
+      "description": "Complete worker-filtered functions export from real Haybarn/VGI connection"
+    },
+    {
+      "path": "coverage/tables.json",
+      "sha256": "5c894ec3fa0c4ef15d752c31c5af651d1660b5a4c70c9147cd0b2b7eded36205",
+      "description": "Complete worker-filtered tables export from real Haybarn/VGI connection"
+    },
+    {
+      "path": "coverage/views.json",
+      "sha256": "1d55e49e8e6bd7c4915999d054ecc433dd1f9c89366da0e79c8e9234ada77ae7",
+      "description": "Complete worker-filtered views export from real Haybarn/VGI connection"
+    },
+    {
+      "path": "coverage/arguments.json",
+      "sha256": "405a47f32b536425a701e437a1edc197230092bcc9c924552ee7ede4ecd69c08",
+      "description": "Complete worker-filtered arguments export from real Haybarn/VGI connection"
+    }
+  ],
+  "objects": [
+    {
+      "schema": "main",
+      "name": "contrast_ratio",
+      "kind": "function",
+      "signatures": [
+        "contrast_ratio(VARCHAR, VARCHAR) -> DOUBLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "delta_e",
+      "kind": "function",
+      "signatures": [
+        "delta_e(VARCHAR, VARCHAR) -> DOUBLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "from_hex",
+      "kind": "function",
+      "signatures": [
+        "from_hex(VARCHAR) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "hsl_to_rgb",
+      "kind": "function",
+      "signatures": [
+        "hsl_to_rgb(DOUBLE, DOUBLE, DOUBLE) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "is_dark",
+      "kind": "function",
+      "signatures": [
+        "is_dark(VARCHAR) -> BOOLEAN"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "luminance",
+      "kind": "function",
+      "signatures": [
+        "luminance(VARCHAR) -> DOUBLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "named_colors",
+      "kind": "function",
+      "signatures": [
+        "named_colors() -> TABLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "nearest_color_name",
+      "kind": "function",
+      "signatures": [
+        "nearest_color_name(VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "rgb_to_hsl",
+      "kind": "function",
+      "signatures": [
+        "rgb_to_hsl(INTEGER, INTEGER, INTEGER) -> STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "rgb_to_lab",
+      "kind": "function",
+      "signatures": [
+        "rgb_to_lab(INTEGER, INTEGER, INTEGER) -> STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "to_hex",
+      "kind": "function",
+      "signatures": [
+        "to_hex(INTEGER, INTEGER, INTEGER) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "wcag_level",
+      "kind": "function",
+      "signatures": [
+        "wcag_level(VARCHAR, VARCHAR) -> VARCHAR"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "named_colors",
+      "kind": "table",
+      "signatures": [
+        "catalog table"
+      ],
+      "authentication": "none",
+      "access": "read"
+    }
+  ],
+  "runtime": "Haybarn 2.0.0rc11",
+  "launch": "github-auto://Query-farm/vgi-color@v0.5.0",
+  "review_notes": "Actual runtime exports: twelve function rows plus one same-named table alias yield twelve logical surfaces; zero views. Registration checked in scalar/convert.rs, scalar/analysis.rs, table/named.rs and lib.rs. Current public source and Cargo trees match release exactly."
+}

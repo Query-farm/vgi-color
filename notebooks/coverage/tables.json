@@ -1,0 +1,51 @@
+{
+  "query": "SELECT * FROM duckdb_tables() WHERE database_name='color' ORDER BY schema_name,table_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "table_name",
+    "table_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "has_primary_key",
+    "estimated_size",
+    "column_count",
+    "index_count",
+    "check_constraint_count",
+    "sql"
+  ],
+  "rows": [
+    [
+      "color",
+      22592,
+      "main",
+      22738,
+      "named_colors",
+      22739,
+      "Every CSS named color (148, including the grey/gray alias spellings) paired with its '#rrggbb' sRGB hex value.",
+      {
+        "category": "discovery",
+        "domain": "color-science",
+        "topic": "named-colors",
+        "vgi.category": "Reference",
+        "vgi.doc_llm": "Every CSS named color the worker knows, each paired with its lowercase '#rrggbb' sRGB hex value. Query it to discover valid CSS color names, to map a name to its hex value, or as the reference table behind nearest_color_name. One row per color.",
+        "vgi.doc_md": "# named_colors\n\nThe discovery table of every CSS Color Module Level 4 named color. One row per color, with columns `name` (the color name, e.g. `tomato`) and `hex` (its lowercase `#rrggbb` sRGB value). Use it to list valid color names, look up a name's hex value, or browse the palette that backs `nearest_color_name`.",
+        "vgi.example_queries": "[{\"description\":\"List the first few CSS named colors with their hex values.\",\"sql\":\"SELECT name, hex FROM color.main.named_colors ORDER BY name LIMIT 5\"},{\"description\":\"Look up the hex value of a specific CSS named color.\",\"sql\":\"SELECT hex FROM color.main.named_colors WHERE name = 'tomato'\"},{\"description\":\"Which CSS named colors are safe for body text on a white page? Grade every named color as text on #ffffff with contrast_ratio and wcag_level, keep AA or better, and list the six lightest that still pass, starting with teal (4.77:1). Only 32 of the 148 names pass; most fail.\",\"sql\":\"SELECT n.name, n.hex, ROUND(color.main.contrast_ratio(n.hex, '#ffffff'), 2) AS ratio, color.main.wcag_level(n.hex, '#ffffff') AS level FROM color.main.named_colors AS n WHERE color.main.wcag_level(n.hex, '#ffffff') IN ('AA', 'AAA') ORDER BY ratio, n.name LIMIT 6\"},{\"description\":\"Palette de-duplication: join named_colors to itself, score every pair of names with different hex values by CIEDE2000 delta_e, and keep the pairs a viewer can barely tell apart (\u0394E00 < 2). Five pairs qualify, from chartreuse / lawngreen (0.652) to moccasin / wheat (1.99).\",\"sql\":\"SELECT name_a, name_b, hex_a, hex_b, ROUND(d, 3) AS delta_e FROM (SELECT a.name AS name_a, b.name AS name_b, a.hex AS hex_a, b.hex AS hex_b, color.main.delta_e(a.hex, b.hex) AS d FROM color.main.named_colors AS a JOIN color.main.named_colors AS b ON a.name < b.name AND a.hex <> b.hex) AS pairs WHERE d < 2 ORDER BY delta_e, name_a, name_b\"}]",
+        "vgi.keywords": "[\"named_colors\",\"CSS colors\",\"color names\",\"named color table\",\"color catalog\",\"discovery\",\"list colors\",\"hex lookup\"]",
+        "vgi.title": "CSS Named Colors Catalog"
+      },
+      false,
+      false,
+      true,
+      0,
+      2,
+      2,
+      0,
+      "CREATE TABLE named_colors(\"name\" VARCHAR, hex VARCHAR NOT NULL, UNIQUE(\"name\"), PRIMARY KEY(\"name\"));"
+    ]
+  ]
+}

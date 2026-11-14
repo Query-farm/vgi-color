@@ -1,0 +1,820 @@
+{
+  "schema_version": 1,
+  "status": "met",
+  "meets_target": true,
+  "catalogs": {
+    "released": {
+      "catalog_status": "verified",
+      "revision": "v0.5.0",
+      "catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc",
+      "collection_reconciled": true,
+      "denominator": 12,
+      "observed_objects": 12,
+      "required": 6,
+      "verified_count": 10,
+      "candidate_count": 0,
+      "fraction": 0.8333333333333334,
+      "meets_target": true,
+      "exact_runtime_count": 10,
+      "runtime_revisions": [
+        "v0.5.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "contrast_ratio"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "delta_e"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "from_hex"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "hsl_to_rgb"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_dark"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "luminance"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "named_colors"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_hsl"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "to_hex"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "wcag_level"
+        }
+      ],
+      "uncovered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "nearest_color_name"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_lab"
+        }
+      ],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "contrast_ratio",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "contrast_ratio(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "delta_e",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "delta_e(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "from_hex",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "from_hex(VARCHAR) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "hsl_to_rgb",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "hsl_to_rgb(DOUBLE, DOUBLE, DOUBLE) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_dark",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "is_dark(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "luminance",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "luminance(VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "named_colors",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "catalog table",
+            "named_colors() -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "nearest_color_name",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "nearest_color_name(VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_hsl",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "rgb_to_hsl(INTEGER, INTEGER, INTEGER) -> STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_lab",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "rgb_to_lab(INTEGER, INTEGER, INTEGER) -> STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "to_hex",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "to_hex(INTEGER, INTEGER, INTEGER) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "wcag_level",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "wcag_level(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    },
+    "current": {
+      "catalog_status": "verified",
+      "revision": "23e60c77deed6b5185a7637c18bc91f3f3c1d71c",
+      "catalog_sha256": "3af308d7d83a54e51a1b5bf83707811b5042d658ba6ef8bdb1d2d1aef0e8f049",
+      "collection_reconciled": true,
+      "denominator": 12,
+      "observed_objects": 12,
+      "required": 6,
+      "verified_count": 10,
+      "candidate_count": 0,
+      "fraction": 0.8333333333333334,
+      "meets_target": true,
+      "exact_runtime_count": 0,
+      "runtime_revisions": [
+        "v0.5.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "contrast_ratio"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "delta_e"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "from_hex"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "hsl_to_rgb"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_dark"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "luminance"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "named_colors"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_hsl"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "to_hex"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "wcag_level"
+        }
+      ],
+      "uncovered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "nearest_color_name"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_lab"
+        }
+      ],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "contrast_ratio",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "contrast_ratio(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "delta_e",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "delta_e(VARCHAR, VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "from_hex",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "from_hex(VARCHAR) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "hsl_to_rgb",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "hsl_to_rgb(DOUBLE, DOUBLE, DOUBLE) -> STRUCT(r INTEGER, g INTEGER, b INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "is_dark",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "is_dark(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "luminance",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "luminance(VARCHAR) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "named_colors",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "catalog table",
+            "named_colors() -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "nearest_color_name",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "nearest_color_name(VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_hsl",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "rgb_to_hsl(INTEGER, INTEGER, INTEGER) -> STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "rgb_to_lab",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "rgb_to_lab(INTEGER, INTEGER, INTEGER) -> STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "to_hex",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "to_hex(INTEGER, INTEGER, INTEGER) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "wcag_level",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "wcag_level(VARCHAR, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  },
+  "interface_drift": {
+    "known": true,
+    "current_only": [],
+    "released_only": [],
+    "changed": []
+  },
+  "notebooks": {
+    "01_keep_the_color_earn_the_contrast.ipynb": {
+      "verified": true,
+      "issues": []
+    }
+  },
+  "examples": [
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "contrast_ratio"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "delta_e"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "luminance"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "wcag_level"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "is_dark"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "named_colors"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "from_hex"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "rgb_to_hsl"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "hsl_to_rgb"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "to_hex"
+      },
+      "notebook": "01_keep_the_color_earn_the_contrast.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "90149f4a04e4edf74856a02039a30c87ded8ce3148f06244a9cd0d88343225cc"
+    }
+  ],
+  "issues": []
+}

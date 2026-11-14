@@ -1,0 +1,482 @@
+{
+  "query": "SELECT * FROM duckdb_functions() WHERE database_name='color' ORDER BY schema_name,function_name,parameter_types",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "function_name",
+    "alias_of",
+    "function_type",
+    "description",
+    "comment",
+    "tags",
+    "return_type",
+    "parameters",
+    "parameter_types",
+    "varargs",
+    "macro_definition",
+    "has_side_effects",
+    "internal",
+    "extension_name",
+    "function_oid",
+    "examples",
+    "stability",
+    "categories"
+  ],
+  "rows": [
+    [
+      "color",
+      "22592",
+      "main",
+      "contrast_ratio",
+      null,
+      "scalar",
+      "WCAG contrast ratio (1..21) between two hex colors; NULL if either is invalid",
+      null,
+      {
+        "vgi.category": "Accessibility",
+        "vgi.doc_llm": "Compute the WCAG 2.x contrast ratio between two sRGB hex colors, from 1.0 (no contrast) to 21.0 (black on white). The order of arguments does not matter. Use it to check text legibility and accessibility. Returns NULL if either input is not a valid hex color.",
+        "vgi.doc_md": "WCAG contrast ratio (1..21) between two hex colors, e.g. `contrast_ratio('#000000', '#ffffff')` \u2192 21.",
+        "vgi.example_queries": "[{\"description\":\"Compute the WCAG contrast ratio between black and white (21.0, the maximum).\",\"sql\":\"SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);\"}]",
+        "vgi.keywords": "[\"contrast_ratio\",\"contrast\",\"WCAG\",\"accessibility\",\"legibility\",\"readability\",\"text contrast\",\"ratio\"]",
+        "vgi.title": "WCAG Contrast Ratio"
+      },
+      "DOUBLE",
+      [
+        "hex_a",
+        "hex_b"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22596,
+      [
+        "SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1);"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "delta_e",
+      null,
+      "scalar",
+      "CIEDE2000 (\u0394E00) color difference between two hex colors; NULL if either is not a valid hex color",
+      null,
+      {
+        "vgi.category": "Color Difference",
+        "vgi.doc_llm": "Compute the CIEDE2000 (\u0394E00) perceptual color difference between two sRGB hex colors. Small values mean the colors are perceptually close; a \u0394E00 near 1 is roughly the just-noticeable difference. Returns NULL if either input is not a valid hex color.",
+        "vgi.doc_md": "CIEDE2000 (\u0394E00) difference between two hex colors, e.g. `delta_e('#ff0000', '#ee0000')`.",
+        "vgi.example_queries": "[{\"description\":\"Measure the perceptual CIEDE2000 (\u0394E00) difference between two near-identical reds.\",\"sql\":\"SELECT color.main.delta_e('#ff0000', '#ee0000');\"}]",
+        "vgi.keywords": "[\"delta_e\",\"delta e\",\"deltaE\",\"CIEDE2000\",\"color difference\",\"perceptual difference\",\"color distance\",\"dE00\",\"similarity\"]",
+        "vgi.title": "CIEDE2000 Color Difference"
+      },
+      "DOUBLE",
+      [
+        "hex_a",
+        "hex_b"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22597,
+      [
+        "SELECT color.main.delta_e('#ff0000', '#ee0000');"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "from_hex",
+      null,
+      "scalar",
+      "Parse '#rgb' / '#rrggbb' / '#rrggbbaa' into `STRUCT(r, g, b)`; NULL if the string is not a valid hex color",
+      null,
+      {
+        "vgi.category": "Conversion",
+        "vgi.doc_llm": "Parse an sRGB hex color string ('#rgb', '#rrggbb' or '#rrggbbaa') into a `STRUCT(r, g, b)` of 0-255 integer channels. Returns a NULL struct when the input is NULL or not a valid hex color (alpha is accepted but dropped).",
+        "vgi.doc_md": "Parse a hex color into a `STRUCT(r, g, b)`, e.g. `from_hex('#ff6347')` \u2192 `(255, 99, 71)`.",
+        "vgi.example_queries": "[{\"description\":\"Parse a '#rrggbb' hex string into its red, green and blue channels.\",\"sql\":\"SELECT (color.main.from_hex('#ff6347')).r AS red;\"}]",
+        "vgi.keywords": "[\"from_hex\",\"hex to rgb\",\"parse hex\",\"decode color\",\"hex color\",\"rrggbb\",\"color parsing\",\"sRGB\"]",
+        "vgi.title": "Parse Hex to RGB"
+      },
+      "STRUCT(r INTEGER, g INTEGER, b INTEGER)",
+      [
+        "hex"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22598,
+      [
+        "SELECT (color.main.from_hex('#ff6347')).r AS red;"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "hsl_to_rgb",
+      null,
+      "scalar",
+      "Convert HSL (h degrees, s/l in [0,1]) to an RGB triple: `STRUCT(r, g, b)` in 0-255",
+      null,
+      {
+        "vgi.category": "Conversion",
+        "vgi.doc_llm": "Convert an HSL color (h in degrees, s and l in [0,1]) back to an RGB triple, returning `STRUCT(r, g, b)` of 0-255 integer channels. Returns a NULL struct if any component is NULL, NaN or infinite.",
+        "vgi.doc_md": "Convert HSL to RGB, e.g. `hsl_to_rgb(120, 1.0, 0.5)` \u2192 `(r := 0, g := 255, b := 0)`.",
+        "vgi.example_queries": "[{\"description\":\"Convert fully-saturated green (hue 120\u00b0) back to an RGB triple.\",\"sql\":\"SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;\"},{\"description\":\"Color-harmony generator: convert #ff6347 to HSL, rotate its hue by 120, 180 and 240 degrees, convert each back with hsl_to_rgb and to_hex, and label it with nearest_color_name. Result: base #ff6347 tomato, triad 1 #47ff63 springgreen, complement #47e3ff skyblue, triad 2 #6347ff slateblue.\",\"sql\":\"WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), harmony AS (SELECT t.role, t.shift, color.main.hsl_to_rgb((base.hsl.h + t.shift) % 360, base.hsl.s, base.hsl.l) AS rgb FROM base, (VALUES ('base', 0), ('triad 1', 120), ('complement', 180), ('triad 2', 240)) AS t(role, shift)), palette AS (SELECT role, shift, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM harmony) SELECT role, hex, color.main.nearest_color_name(hex) AS nearest_name FROM palette ORDER BY shift\"}]",
+        "vgi.keywords": "[\"hsl_to_rgb\",\"hsl to rgb\",\"hue saturation lightness\",\"color space conversion\",\"RGB\",\"from hsl\"]",
+        "vgi.title": "Convert HSL to RGB"
+      },
+      "STRUCT(r INTEGER, g INTEGER, b INTEGER)",
+      [
+        "h",
+        "s",
+        "l"
+      ],
+      [
+        "DOUBLE",
+        "DOUBLE",
+        "DOUBLE"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22599,
+      [
+        "SELECT (color.main.hsl_to_rgb(120, 1.0, 0.5)).g AS green;",
+        "WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), harmony AS (SELECT t.role, t.shift, color.main.hsl_to_rgb((base.hsl.h + t.shift) % 360, base.hsl.s, base.hsl.l) AS rgb FROM base, (VALUES ('base', 0), ('triad 1', 120), ('complement', 180), ('triad 2', 240)) AS t(role, shift)), palette AS (SELECT role, shift, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM harmony) SELECT role, hex, color.main.nearest_color_name(hex) AS nearest_name FROM palette ORDER BY shift"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "is_dark",
+      null,
+      "scalar",
+      "True if white text has higher WCAG contrast than black text on a hex color (luminance below ~0.1791); NULL if invalid",
+      null,
+      {
+        "vgi.category": "Accessibility",
+        "vgi.doc_llm": "Return TRUE when white text on this sRGB hex background has a higher WCAG contrast ratio than black text, i.e. the color is dark enough that light foreground text reads better on it. This is the WCAG crossover point: relative luminance below about 0.1791 (not 0.5), so mid-tones such as '#808080' are NOT dark (black text is 5.32:1 on it, white only 3.95:1). Use is_dark to choose '#ffffff' or '#000000' text; the chosen text always reaches at least 4.58:1. Returns NULL if the input is not a valid hex color.",
+        "vgi.doc_md": "True if white text out-contrasts black text on a hex color (WCAG luminance below \u22480.1791), e.g. `is_dark('#001f3f')` \u2192 true, `is_dark('#808080')` \u2192 false.",
+        "vgi.example_queries": "[{\"description\":\"Test whether a navy background is dark (so light text should be used).\",\"sql\":\"SELECT color.main.is_dark('#001f3f');\"},{\"description\":\"Pick a readable label color for each background in a palette: is_dark chooses white text on dark backgrounds and black text on light ones, then contrast_ratio and wcag_level grade the pair. is_dark always picks the higher-contrast option, so every row reaches at least AA; the closest call is #e50914 with white text at 4.79:1, and mid-grey #808080 gets black text (5.32:1).\",\"sql\":\"SELECT p.bg, CASE WHEN color.main.is_dark(p.bg) THEN '#ffffff' ELSE '#000000' END AS text_hex, ROUND(color.main.contrast_ratio(text_hex, p.bg), 2) AS ratio, color.main.wcag_level(text_hex, p.bg) AS level FROM (VALUES ('#e50914'), ('#e1306c'), ('#808080'), ('#4285f4'), ('#3b5998'), ('#ff9900')) AS p(bg) ORDER BY ratio, p.bg\"}]",
+        "vgi.keywords": "[\"is_dark\",\"dark color\",\"light or dark\",\"luminance threshold\",\"theme\",\"foreground choice\",\"brightness\"]",
+        "vgi.title": "Detect Dark Color"
+      },
+      "BOOLEAN",
+      [
+        "hex"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22600,
+      [
+        "SELECT color.main.is_dark('#001f3f');",
+        "SELECT p.bg, CASE WHEN color.main.is_dark(p.bg) THEN '#ffffff' ELSE '#000000' END AS text_hex, ROUND(color.main.contrast_ratio(text_hex, p.bg), 2) AS ratio, color.main.wcag_level(text_hex, p.bg) AS level FROM (VALUES ('#e50914'), ('#e1306c'), ('#808080'), ('#4285f4'), ('#3b5998'), ('#ff9900')) AS p(bg) ORDER BY ratio, p.bg"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "luminance",
+      null,
+      "scalar",
+      "WCAG relative luminance (0..1) of a hex color; NULL if invalid",
+      null,
+      {
+        "vgi.category": "Accessibility",
+        "vgi.doc_llm": "Compute the WCAG 2.x relative luminance (0 for black, 1 for white) of an sRGB hex color by linearizing each channel and weighting them 0.2126 R + 0.7152 G + 0.0722 B. Returns NULL if the input is not a valid hex color.",
+        "vgi.doc_md": "WCAG relative luminance (0..1) of a hex color, e.g. `luminance('#808080')`.",
+        "vgi.example_queries": "[{\"description\":\"Compute the WCAG relative luminance of mid-grey.\",\"sql\":\"SELECT color.main.luminance('#808080');\"}]",
+        "vgi.keywords": "[\"luminance\",\"relative luminance\",\"WCAG\",\"brightness\",\"perceived brightness\",\"grayscale weight\",\"accessibility\"]",
+        "vgi.title": "WCAG Relative Luminance"
+      },
+      "DOUBLE",
+      [
+        "hex"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22601,
+      [
+        "SELECT color.main.luminance('#808080');"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "named_colors",
+      null,
+      "table",
+      "List every CSS named color with its '#rrggbb' hex value",
+      null,
+      {
+        "vgi.category": "Reference",
+        "vgi.doc_llm": "List every CSS named color the worker knows, each paired with its '#rrggbb' sRGB hex value. Use it to discover valid color names, to map names to hex, or as the lookup table behind nearest_color_name.",
+        "vgi.doc_md": "List every CSS named color with its `#rrggbb` hex value. Columns: `name`, `hex`.",
+        "vgi.executable_examples": "[\n  {\n    \"description\": \"Format an RGB triple as a '#rrggbb' hex string.\",\n    \"sql\": \"SELECT color.main.to_hex(255, 99, 71) AS hex\"\n  },\n  {\n    \"description\": \"Parse a hex color into its red, green and blue channels.\",\n    \"sql\": \"SELECT (color.main.from_hex('#ff6347')).r AS red, (color.main.from_hex('#ff6347')).g AS green, (color.main.from_hex('#ff6347')).b AS blue\"\n  },\n  {\n    \"description\": \"Convert pure red into hue, saturation and lightness.\",\n    \"sql\": \"SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue, (color.main.rgb_to_hsl(255, 0, 0)).s AS saturation, (color.main.rgb_to_hsl(255, 0, 0)).l AS lightness\"\n  },\n  {\n    \"description\": \"Measure the WCAG contrast ratio between black and white.\",\n    \"sql\": \"SELECT ROUND(color.main.contrast_ratio('#000000', '#ffffff'), 1) AS ratio\"\n  },\n  {\n    \"description\": \"Classify the WCAG conformance level of dark-grey text on white.\",\n    \"sql\": \"SELECT color.main.wcag_level('#595959', '#ffffff') AS level\"\n  },\n  {\n    \"description\": \"Find the closest CSS named color to a hex value.\",\n    \"sql\": \"SELECT color.main.nearest_color_name('#ff6347') AS name\"\n  },\n  {\n    \"description\": \"List the first few CSS named colors with their hex values.\",\n    \"sql\": \"SELECT name, hex FROM color.main.named_colors() ORDER BY name LIMIT 5\"\n  }\n]",
+        "vgi.keywords": "[\"named_colors\",\"CSS colors\",\"color names\",\"named color table\",\"color catalog\",\"discovery\",\"list colors\",\"hex lookup\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"name\", \"type\": \"VARCHAR\", \"description\": \"The CSS Color Module Level 4 color name, e.g. 'tomato' or 'rebeccapurple'.\"},\n  {\"name\": \"hex\", \"type\": \"VARCHAR\", \"description\": \"The color's lowercase '#rrggbb' sRGB hex value.\"}\n]",
+        "vgi.title": "CSS Named Colors Catalog"
+      },
+      null,
+      [],
+      [],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22607,
+      [],
+      null,
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "nearest_color_name",
+      null,
+      "scalar",
+      "Closest CSS named color to a hex color, by CIEDE2000 \u0394E; NULL if invalid",
+      null,
+      {
+        "vgi.category": "Color Difference",
+        "vgi.doc_llm": "Return the name of the CSS named color closest to a given sRGB hex color, measured by CIEDE2000 (\u0394E00) perceptual distance (ties resolve to the first match in CSS table order). Returns NULL if the input is not a valid hex color.",
+        "vgi.doc_md": "Closest CSS named color to a hex value, e.g. `nearest_color_name('#ff6347')` \u2192 'tomato'.",
+        "vgi.example_queries": "[{\"description\":\"Find the closest CSS named color to a given hex value (by CIEDE2000 \u0394E).\",\"sql\":\"SELECT color.main.nearest_color_name('#ff6347');\"},{\"description\":\"Snap brand hex values to CSS names and flag which swaps are safe: nearest_color_name picks the name, joining named_colors recovers its hex, and delta_e measures the error; close_match is true when \u0394E00 < 2. #ffd800 \u2192 gold (0.32) and #fafafa \u2192 white (1.0) are close; #f40009 \u2192 red (2.55), #4285f4 \u2192 dodgerblue (5.05) and #1da1f2 \u2192 dodgerblue (7.03) are visibly off.\",\"sql\":\"SELECT p.hex, n.name AS css_name, n.hex AS css_hex, ROUND(color.main.delta_e(p.hex, n.hex), 2) AS delta_e, color.main.delta_e(p.hex, n.hex) < 2 AS close_match FROM (VALUES ('#fafafa'), ('#ffd800'), ('#f40009'), ('#4285f4'), ('#1da1f2')) AS p(hex) JOIN color.main.named_colors AS n ON n.name = color.main.nearest_color_name(p.hex) ORDER BY delta_e, p.hex\"}]",
+        "vgi.keywords": "[\"nearest_color_name\",\"named color\",\"closest color\",\"color name\",\"CSS color\",\"label color\",\"classify color\",\"dE\"]",
+        "vgi.title": "Nearest Named Color"
+      },
+      "VARCHAR",
+      [
+        "hex"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22602,
+      [
+        "SELECT color.main.nearest_color_name('#ff6347');",
+        "SELECT p.hex, n.name AS css_name, n.hex AS css_hex, ROUND(color.main.delta_e(p.hex, n.hex), 2) AS delta_e, color.main.delta_e(p.hex, n.hex) < 2 AS close_match FROM (VALUES ('#fafafa'), ('#ffd800'), ('#f40009'), ('#4285f4'), ('#1da1f2')) AS p(hex) JOIN color.main.named_colors AS n ON n.name = color.main.nearest_color_name(p.hex) ORDER BY delta_e, p.hex"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "rgb_to_hsl",
+      null,
+      "scalar",
+      "Convert an RGB triple (0-255) to HSL: `STRUCT(h, s, l)` with h in [0,360), s in [0,1], l in [0,1]",
+      null,
+      {
+        "vgi.category": "Conversion",
+        "vgi.doc_llm": "Convert an RGB triple (each channel 0-255, clamped) to the HSL color space, returning `STRUCT(h, s, l)` where h is in [0,360) degrees and s, l are in [0,1]. Returns a NULL struct if any channel is NULL.",
+        "vgi.doc_md": "Convert RGB to HSL, e.g. `rgb_to_hsl(255, 0, 0)` \u2192 `(h := 0, s := 1, l := 0.5)`.",
+        "vgi.example_queries": "[{\"description\":\"Convert pure red to its hue, saturation and lightness.\",\"sql\":\"SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;\"}]",
+        "vgi.keywords": "[\"rgb_to_hsl\",\"rgb to hsl\",\"hue saturation lightness\",\"color space conversion\",\"HSL\",\"hue\",\"saturation\",\"lightness\"]",
+        "vgi.title": "Convert RGB to HSL"
+      },
+      "STRUCT(h DOUBLE, s DOUBLE, l DOUBLE)",
+      [
+        "r",
+        "g",
+        "b"
+      ],
+      [
+        "INTEGER",
+        "INTEGER",
+        "INTEGER"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22603,
+      [
+        "SELECT (color.main.rgb_to_hsl(255, 0, 0)).h AS hue;"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "rgb_to_lab",
+      null,
+      "scalar",
+      "Convert an RGB triple (0-255) to CIELAB (D65): `STRUCT(l, a, b)`",
+      null,
+      {
+        "vgi.category": "Conversion",
+        "vgi.doc_llm": "Convert an RGB triple (0-255, clamped) to the perceptually-uniform CIELAB color space under the D65 reference white, returning `STRUCT(l, a, b)` where l is lightness (0-100) and a/b are the chroma axes. Returns a NULL struct if any channel is NULL.",
+        "vgi.doc_md": "Convert RGB to CIELAB (D65), e.g. `rgb_to_lab(255, 255, 255)` \u2192 `(l \u2248 100, a \u2248 0, b \u2248 0)`.",
+        "vgi.example_queries": "[{\"description\":\"Convert white to CIELAB (D65) lightness L* and a*/b* chroma.\",\"sql\":\"SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;\"},{\"description\":\"HSL lightness is not perceived lightness: take the 18 named colors whose HSL lightness (rgb_to_hsl) is exactly 0.5 and sort them by CIELAB L* (rgb_to_lab). L* runs from 97.1 for yellow down to 32.3 for blue, so sort or match palettes by L*, not HSL l.\",\"sql\":\"WITH rgb AS (SELECT n.name, n.hex, color.main.from_hex(n.hex) AS c FROM color.main.named_colors AS n), spaces AS (SELECT name, hex, color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl, color.main.rgb_to_lab(c.r, c.g, c.b) AS lab FROM rgb) SELECT name, hex, ROUND(lab.l, 1) AS lab_lightness FROM spaces WHERE ROUND(hsl.l, 3) = 0.5 ORDER BY lab_lightness DESC, name\"}]",
+        "vgi.keywords": "[\"rgb_to_lab\",\"rgb to lab\",\"CIELAB\",\"Lab color\",\"L*a*b*\",\"perceptual color space\",\"D65\",\"color space conversion\"]",
+        "vgi.title": "Convert RGB to CIELAB"
+      },
+      "STRUCT(l DOUBLE, a DOUBLE, b DOUBLE)",
+      [
+        "r",
+        "g",
+        "b"
+      ],
+      [
+        "INTEGER",
+        "INTEGER",
+        "INTEGER"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22604,
+      [
+        "SELECT (color.main.rgb_to_lab(255, 255, 255)).l AS lightness;",
+        "WITH rgb AS (SELECT n.name, n.hex, color.main.from_hex(n.hex) AS c FROM color.main.named_colors AS n), spaces AS (SELECT name, hex, color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl, color.main.rgb_to_lab(c.r, c.g, c.b) AS lab FROM rgb) SELECT name, hex, ROUND(lab.l, 1) AS lab_lightness FROM spaces WHERE ROUND(hsl.l, 3) = 0.5 ORDER BY lab_lightness DESC, name"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "to_hex",
+      null,
+      "scalar",
+      "Format an RGB triple (0-255, clamped) as a '#rrggbb' hex string",
+      null,
+      {
+        "vgi.category": "Conversion",
+        "vgi.doc_llm": "Format an RGB triple (each channel 0-255, out-of-range values clamped) as a lowercase '#rrggbb' sRGB hex color string. Returns NULL if any channel is NULL.",
+        "vgi.doc_md": "Format an RGB triple as a `#rrggbb` hex string, e.g. `to_hex(255, 99, 71)` \u2192 `#ff6347`.",
+        "vgi.example_queries": "[{\"description\":\"Format the RGB triple for 'tomato' as a '#rrggbb' hex string.\",\"sql\":\"SELECT color.main.to_hex(255, 99, 71);\"}]",
+        "vgi.keywords": "[\"to_hex\",\"rgb to hex\",\"hex color\",\"hex string\",\"rrggbb\",\"format color\",\"encode color\",\"sRGB\"]",
+        "vgi.title": "Format RGB as Hex"
+      },
+      "VARCHAR",
+      [
+        "r",
+        "g",
+        "b"
+      ],
+      [
+        "INTEGER",
+        "INTEGER",
+        "INTEGER"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22605,
+      [
+        "SELECT color.main.to_hex(255, 99, 71);"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "color",
+      "22592",
+      "main",
+      "wcag_level",
+      null,
+      "scalar",
+      "WCAG conformance level for normal text ('AAA'|'AA'|'AA Large'|'fail') given foreground/background hex colors; NULL if either is invalid",
+      null,
+      {
+        "vgi.category": "Accessibility",
+        "vgi.doc_llm": "Classify the WCAG 2.x conformance level for normal-size text given a foreground and background sRGB hex color, returning 'AAA' (>=7:1), 'AA' (>=4.5:1), 'AA Large' (>=3:1) or 'fail'. Returns NULL if either input is not a valid hex color.",
+        "vgi.doc_md": "WCAG conformance level for text on a background, e.g. `wcag_level('#595959', '#ffffff')`.",
+        "vgi.example_queries": "[{\"description\":\"Classify the WCAG conformance level of dark-grey text on a white background.\",\"sql\":\"SELECT color.main.wcag_level('#595959', '#ffffff');\"},{\"description\":\"Accessible shade finder: keep tomato's (#ff6347) HSL hue and saturation, step its lightness from 0.60 down to 0.30, and grade white text on each shade with contrast_ratio and wcag_level. Lightness 0.45 (#e52300, 4.59:1) is the lightest shade that reaches AA; 0.30 (#991700, 8.48:1) reaches AAA.\",\"sql\":\"WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), shades AS (SELECT t.k / 100 AS lightness, color.main.hsl_to_rgb(base.hsl.h, base.hsl.s, t.k / 100) AS rgb FROM base, range(30, 65, 5) AS t(k)), ladder AS (SELECT lightness, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM shades) SELECT lightness, hex, ROUND(color.main.contrast_ratio('#ffffff', hex), 2) AS ratio_on_white, color.main.wcag_level('#ffffff', hex) AS level FROM ladder ORDER BY lightness DESC\"}]",
+        "vgi.keywords": "[\"wcag_level\",\"WCAG\",\"conformance\",\"AA\",\"AAA\",\"accessibility\",\"contrast level\",\"compliance\",\"a11y\"]",
+        "vgi.title": "WCAG Conformance Level"
+      },
+      "VARCHAR",
+      [
+        "hex_fg",
+        "hex_bg"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22606,
+      [
+        "SELECT color.main.wcag_level('#595959', '#ffffff');",
+        "WITH base AS (SELECT color.main.rgb_to_hsl(c.r, c.g, c.b) AS hsl FROM (SELECT color.main.from_hex('#ff6347') AS c)), shades AS (SELECT t.k / 100 AS lightness, color.main.hsl_to_rgb(base.hsl.h, base.hsl.s, t.k / 100) AS rgb FROM base, range(30, 65, 5) AS t(k)), ladder AS (SELECT lightness, color.main.to_hex(rgb.r, rgb.g, rgb.b) AS hex FROM shades) SELECT lightness, hex, ROUND(color.main.contrast_ratio('#ffffff', hex), 2) AS ratio_on_white, color.main.wcag_level('#ffffff', hex) AS level FROM ladder ORDER BY lightness DESC"
+      ],
+      "CONSISTENT",
+      []
+    ]
+  ]
+}
