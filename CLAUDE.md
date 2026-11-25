@@ -19,7 +19,7 @@ full MSRV control (workspace `rust-version = 1.97`).
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.51.0", arrow 59.2 (vgi.v3 / haybarn 2.0)
+Cargo.toml                          workspace; pins vgi = "0.53.2", arrow 59.2 (vgi.v3 / haybarn 2.0)
 crates/color-worker/
   src/main.rs                       native binary: logging + `build_worker().run()`
   src/lib.rs                        build_worker(): registers scalars + catalog metadata (shared with color-wasm)
